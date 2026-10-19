@@ -1,0 +1,119 @@
+import SwiftUI
+import UIKit
+import WidgetKit
+
+struct SettingsView: View {
+    @EnvironmentObject var store: AppStore
+    @Environment(\.dismiss) private var dismiss
+    @State private var copied = false
+    @State private var confirmClear = false
+
+    var body: some View {
+        NavigationStack {
+            List {
+                if let p = store.purifier {
+                    Section("Device") {
+                        row("Name", p.name)
+                        row("Product", p.info.productName.isEmpty ? "–" : p.info.productName)
+                        row("Category", p.info.category)
+                        row("Status", p.info.online ? "Online" : "Offline")
+                        Button("Switch device") {
+                            dismiss()
+                            store.forgetDevice()
+                        }
+                    }
+                }
+
+                Section {
+                    row("Readings logged", "\(store.history.count)")
+                    if let first = store.history.first {
+                        row("Since", first.t.formatted(date: .abbreviated, time: .shortened))
+                    }
+                    Button("Clear history", role: .destructive) { confirmClear = true }
+                } header: {
+                    Text("History")
+                } footer: {
+                    Text("Tuya doesn't keep PM2.5 history for us, so Exhale logs it on the phone: every 20 s while the app is open, plus each time the widget or a background refresh runs (roughly every 15–30 min). Keep a widget on your home screen to fill gaps.")
+                }
+
+                Section {
+                    row("Widget data sharing", AppGroup.isShared ? "Working" : "Not available")
+                    Button("Refresh widgets") { WidgetCenter.shared.reloadAllTimelines() }
+                } header: {
+                    Text("Widget")
+                } footer: {
+                    if !AppGroup.isShared {
+                        Text("The sideload didn't keep the App Group, so the widget can't read the login or readings. In Sideloadly, turn off \"Remove app extensions\" and make sure App Groups aren't stripped, or use AltStore/SideStore.")
+                    }
+                }
+
+                Section {
+                    Button(copied ? "Copied" : "Copy device data") { copyRaw() }
+                } header: {
+                    Text("Troubleshooting")
+                } footer: {
+                    Text("Copies the raw data points and spec. Paste it to Claude if a control is missing or labelled wrong.")
+                }
+
+                Section("Account") {
+                    if let t = store.token {
+                        row("User code", t.userCode)
+                        row("Region", URL(string: t.endpoint)?.host ?? t.endpoint)
+                    }
+                    Button("Sign out", role: .destructive) {
+                        dismiss()
+                        store.signOut()
+                    }
+                }
+
+                Section {
+                    Text("Exhale uses the same Smart Life cloud as Home Assistant's Tuya integration. Not affiliated with Tuya.")
+                        .font(.footnote).foregroundStyle(.secondary)
+                }
+            }
+            .navigationTitle("Settings")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } }
+            }
+            .confirmationDialog("Clear PM2.5 history?", isPresented: $confirmClear, titleVisibility: .visible) {
+                Button("Clear", role: .destructive) {
+                    History.clear()
+                    store.history = []
+                }
+            }
+        }
+        .preferredColorScheme(.dark)
+    }
+
+    private func row(_ title: String, _ value: String) -> some View {
+        HStack {
+            Text(title)
+            Spacer()
+            Text(value).foregroundStyle(.secondary).multilineTextAlignment(.trailing)
+        }
+    }
+
+    private func copyRaw() {
+        guard let p = store.purifier else { return }
+        var lines = ["Device: \(p.name) | category \(p.info.category) | product \(p.info.productName)", "", "Status:"]
+        for (k, v) in p.status.sorted(by: { $0.key < $1.key }) { lines.append("  \(k) = \(v.display)") }
+        lines.append("")
+        lines.append("Functions (writable):")
+        for s in p.functions.values.sorted(by: { $0.code < $1.code }) { lines.append("  " + describe(s)) }
+        lines.append("")
+        lines.append("Status spec:")
+        for s in p.statusSpec.values.sorted(by: { $0.code < $1.code }) { lines.append("  " + describe(s)) }
+        UIPasteboard.general.string = lines.joined(separator: "\n")
+        copied = true
+    }
+
+    private func describe(_ s: DPSpec) -> String {
+        var parts = ["\(s.code) [\(s.type)]"]
+        if let r = s.range { parts.append("range " + r.joined(separator: ",")) }
+        if let lo = s.min, let hi = s.max { parts.append("\(Fmt.num(lo))...\(Fmt.num(hi))") }
+        if let sc = s.scale, sc != 0 { parts.append("scale \(sc)") }
+        if let u = s.unit, !u.isEmpty { parts.append("unit \(u)") }
+        return parts.joined(separator: " ")
+    }
+}

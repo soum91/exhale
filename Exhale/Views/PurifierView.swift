@@ -5,12 +5,36 @@ struct PurifierView: View {
     let purifier: Purifier
     @State private var showSettings = false
     @State private var confirmFilterReset = false
+    @AppStorage("homePage") private var page = 0
 
     private var accent: Color { purifier.isOn && purifier.info.online ? AQ.color(purifier.pm25) : Theme.off }
     private var controlsEnabled: Bool { purifier.isOn && purifier.info.online }
 
     var body: some View {
         NavigationStack {
+            TabView(selection: $page) {
+                modernPage.tag(0)
+                ClassicView(purifier: purifier, showSettings: $showSettings).tag(1)
+            }
+            .tabViewStyle(.page(indexDisplayMode: .always))
+            .background((page == 1 ? ClassicView.bg : Theme.bgBottom).ignoresSafeArea())
+            .navigationTitle(purifier.name)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        withAnimation { page = page == 0 ? 1 : 0 }
+                    } label: { Image(systemName: page == 0 ? "circle.grid.2x2" : "chart.xyaxis.line") }
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button { showSettings = true } label: { Image(systemName: "gearshape") }
+                }
+            }
+            .sheet(isPresented: $showSettings) { SettingsView().environmentObject(store) }
+        }
+    }
+
+    private var modernPage: some View {
             ZStack {
                 Theme.background(accent).animation(.easeInOut(duration: 0.6), value: accent)
                 ScrollView {
@@ -32,19 +56,10 @@ struct PurifierView: View {
                         }
                     }
                     .padding(.horizontal, 16)
-                    .padding(.bottom, 30)
+                    .padding(.bottom, 50)
                 }
                 .refreshable { await store.refresh() }
             }
-            .navigationTitle(purifier.name)
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button { showSettings = true } label: { Image(systemName: "gearshape") }
-                }
-            }
-            .sheet(isPresented: $showSettings) { SettingsView().environmentObject(store) }
-        }
     }
 
     // MARK: Hero

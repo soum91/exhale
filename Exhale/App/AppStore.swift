@@ -163,30 +163,41 @@ final class AppStore: ObservableObject {
 
     // MARK: Commands
 
-    func set(_ code: String, _ value: JSONValue) {
+    func set(_ code: String, _ value: JSONValue) { setMany([(code, value)]) }
+
+    /// Sends several data points as one command, so the purifier only reacts once.
+    func setMany(_ commands: [(String, JSONValue)]) {
         guard let client, let before = purifier else { return }
+        let cmds = commands.filter { before.status[$0.0] != $0.1 || commands.count == 1 }
+        guard !cmds.isEmpty else { return }
         // Turning the display on by hand switches off "keep display off", or the next poll would undo it.
-        if code == (Tweaks.values.displayCode ?? before.displayCode), value.boolValue == true, Tweaks.values.keepDisplayOff {
+        let displayCode = Tweaks.values.displayCode ?? before.displayCode
+        if cmds.contains(where: { $0.0 == displayCode && $0.1.boolValue == true }), Tweaks.values.keepDisplayOff {
             var t = Tweaks.values
             t.keepDisplayOff = false
             Tweaks.values = t
             keepDisplayOff = false
         }
-        let old = before.status[code]
-        purifier = before.applying(code, value)
-        pending.insert(code)
+        var old: [String: JSONValue?] = [:]
+        var updated = before
+        for (code, value) in cmds {
+            old.updateValue(before.status[code], forKey: code)
+            updated = updated.applying(code, value)
+            pending.insert(code)
+        }
+        purifier = updated
         Task {
             do {
-                try await client.send(id: before.id, [(code, value)])
-                pending.remove(code)
+                try await client.send(id: before.id, cmds)
+                for (code, _) in cmds { pending.remove(code) }
                 if let p = purifier { Cache.save(p) }
                 reloadWidgets()
                 try? await Task.sleep(nanoseconds: 1_500_000_000)
                 await refresh()
             } catch {
-                pending.remove(code)
+                for (code, _) in cmds { pending.remove(code) }
                 if var p = purifier {
-                    p.info.status[code] = old
+                    for (code, value) in old { p.info.status[code] = value }
                     purifier = p
                 }
                 handle(error)

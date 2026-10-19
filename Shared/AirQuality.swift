@@ -80,3 +80,31 @@ enum AQ {
     static func label(_ pm: Double?) -> String { pm.map { AQBand.of($0).label } ?? "No data" }
     static func value(_ pm: Double?) -> String { pm.map { Fmt.num($0.rounded()) } ?? "–" }
 }
+
+/// US EPA AQI from PM2.5 (2024 breakpoints), the number the Guardian app shows.
+enum USAQI {
+    private static let table: [(cLo: Double, cHi: Double, iLo: Double, iHi: Double)] = [
+        (0.0, 9.0, 0, 50), (9.1, 35.4, 51, 100), (35.5, 55.4, 101, 150),
+        (55.5, 125.4, 151, 200), (125.5, 225.4, 201, 300), (225.5, 325.4, 301, 500),
+    ]
+
+    static func from(pm25: Double) -> Int {
+        let c = (max(pm25, 0) * 10).rounded(.down) / 10
+        for row in table where c <= row.cHi {
+            let lo = max(c, row.cLo)
+            return Int(((row.iHi - row.iLo) / (row.cHi - row.cLo) * (lo - row.cLo) + row.iLo).rounded())
+        }
+        return 500
+    }
+
+    static func band(_ aqi: Int) -> AQBand {
+        switch aqi {
+        case ..<51: return .good
+        case ..<101: return .moderate
+        case ..<151: return .sensitive
+        case ..<201: return .unhealthy
+        case ..<301: return .veryUnhealthy
+        default: return .hazardous
+        }
+    }
+}

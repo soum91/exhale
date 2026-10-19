@@ -40,7 +40,9 @@ struct SettingsView: View {
                     row("Widget data sharing", AppGroup.isShared ? "Working" : "Not available")
                     row("App Group", AppGroup.activeGroup ?? "none")
                     row("Signed groups", AppGroup.signedGroups().isEmpty ? "none" : AppGroup.signedGroups().joined(separator: "\n"))
+                    row("Shared folders", "\(AppGroup.containers.count)")
                     row("Bundle ID", Bundle.main.bundleIdentifier ?? "?")
+                    row("Version", AppGroup.version)
                     Button("Refresh widgets") { WidgetCenter.shared.reloadAllTimelines() }
                 } header: {
                     Text("Widget")

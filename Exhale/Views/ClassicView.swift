@@ -44,7 +44,17 @@ struct ClassicView: View {
                         Spacer()
                         RoundButton(title: "More", icon: "slider.horizontal.3") { sheet = .more }
                     }
-                    if let fan = fanControl { fanSlider(fan) }
+                    if let fan = fanControl {
+                        fanSlider(fan)
+                    } else if let mode = purifier.modeCode, let range = purifier.functions[mode]?.range {
+                        VStack(spacing: 14) {
+                            Text("Mode").font(.system(size: 26)).foregroundStyle(.white.opacity(0.6))
+                            ChipRow(options: range, selected: purifier.string(mode), color: green,
+                                    pending: store.pending.contains(mode), icons: true) { store.set(mode, .string($0)) }
+                        }
+                        .disabled(!active)
+                        .opacity(active ? 1 : 0.5)
+                    }
                     bottomRow
                 }
                 .padding(.horizontal, 22)

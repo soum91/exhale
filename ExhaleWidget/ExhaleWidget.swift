@@ -119,10 +119,12 @@ struct EmptyState: View {
         VStack(alignment: .leading, spacing: 6) {
             Image(systemName: "aqi.medium").font(.title2).foregroundStyle(.white.opacity(0.7))
             Spacer()
-            Text(!entry.shared ? "Widget can't reach Exhale's data (App Group: \(AppGroup.signedGroups().first ?? "none")). Open Exhale › Settings › Widget." :
+            Text(!entry.shared ? "Widget can't open any shared folder (v\(AppGroup.version)). Remove this widget and add it again." :
                     entry.signedIn ? "Pick your purifier in Exhale." : "Open Exhale to sign in.")
                 .font(.system(size: 13, weight: .medium))
                 .foregroundStyle(.white.opacity(0.8))
+            Text("v\(AppGroup.version) · \(AppGroup.containers.count) shared")
+                .font(.system(size: 9)).foregroundStyle(.white.opacity(0.35))
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
     }
@@ -146,7 +148,7 @@ struct SmallView: View {
                 if !s.online {
                     Text("Offline").font(.system(size: 11)).foregroundStyle(.white.opacity(0.5))
                 } else if let sp = s.speed, s.isOn {
-                    Label("Fan \(sp)", systemImage: "fan")
+                    Label(sp, systemImage: "fan")
                         .font(.system(size: 11, weight: .medium))
                         .foregroundStyle(.white.opacity(0.5))
                         .padding(.top, 2)

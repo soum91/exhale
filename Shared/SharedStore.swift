@@ -12,8 +12,14 @@ enum AppGroup {
     static var isShared: Bool { resolved.shared }
     static var activeGroup: String? { resolved.group }
     static var candidates: [String] { resolved.tried }
+    /// Every shared container this binary can open. Some sideloaders hand the app and the widget a pool of
+    /// renamed groups in different orders, so data is written to all of them and read from the newest copy.
+    static var containers: [URL] { resolved.all }
+    static var version: String {
+        (Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String) ?? "?"
+    }
 
-    private static let resolved: (url: URL, shared: Bool, group: String?, tried: [String]) = {
+    private static let resolved: (url: URL, shared: Bool, group: String?, tried: [String], all: [URL]) = {
         var ids: [String] = signedGroups()
         for bundle in [Bundle.main, appBundle].compactMap({ $0 }) {
             if let alt = bundle.object(forInfoDictionaryKey: "ALTAppGroups") as? [String] { ids += alt }
@@ -21,14 +27,20 @@ enum AppGroup {
         ids.append(defaultID)
         var unique: [String] = []
         for id in ids where !unique.contains(id) { unique.append(id) }
+        var urls: [URL] = []
+        var first: String?
         for id in unique {
             if let url = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: id) {
-                return (url, true, id, unique)
+                urls.append(url)
+                if first == nil { first = id }
             }
+        }
+        if let first, let url = urls.first {
+            return (url, true, first, unique, urls)
         }
         let fallback = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
         try? FileManager.default.createDirectory(at: fallback, withIntermediateDirectories: true)
-        return (fallback, false, nil, unique)
+        return (fallback, false, nil, unique, [fallback])
     }()
 
     /// App Group IDs from this bundle's embedded.mobileprovision and its executable's code signature.
@@ -79,7 +91,15 @@ enum AppGroup {
     static func file(_ name: String) -> URL { containerURL.appendingPathComponent(name) }
 
     static func read<T: Decodable>(_ type: T.Type, _ name: String) -> T? {
-        guard let data = try? Data(contentsOf: file(name)) else { return nil }
+        let newest = containers
+            .map { $0.appendingPathComponent(name) }
+            .compactMap { url -> (URL, Date)? in
+                guard let attrs = try? FileManager.default.attributesOfItem(atPath: url.path),
+                      let date = attrs[.modificationDate] as? Date else { return nil }
+                return (url, date)
+            }
+            .max { $0.1 < $1.1 }
+        guard let url = newest?.0, let data = try? Data(contentsOf: url) else { return nil }
         let dec = JSONDecoder()
         dec.dateDecodingStrategy = .secondsSince1970
         return try? dec.decode(T.self, from: data)
@@ -89,10 +109,14 @@ enum AppGroup {
         let enc = JSONEncoder()
         enc.dateEncodingStrategy = .secondsSince1970
         guard let data = try? enc.encode(value) else { return }
-        try? data.write(to: file(name), options: [.atomic, .completeFileProtectionUntilFirstUserAuthentication])
+        for dir in containers {
+            try? data.write(to: dir.appendingPathComponent(name), options: [.atomic, .completeFileProtectionUntilFirstUserAuthentication])
+        }
     }
 
-    static func remove(_ name: String) { try? FileManager.default.removeItem(at: file(name)) }
+    static func remove(_ name: String) {
+        for dir in containers { try? FileManager.default.removeItem(at: dir.appendingPathComponent(name)) }
+    }
 }
 
 enum TokenStore {
@@ -122,7 +146,7 @@ enum Cache {
     static func save(_ p: Purifier) {
         AppGroup.write(p, "purifier.json")
         var speed: String? = nil
-        if let code = p.speedCode, let v = p.string(code) { speed = Fmt.label(v) }
+        if let code = p.speedCode ?? p.modeCode, let v = p.string(code) { speed = Fmt.label(v) }
         AppGroup.write(Snapshot(deviceID: p.id, name: p.name, pm25: p.pm25, isOn: p.isOn,
                                 hasPower: p.powerCode != nil, online: p.info.online,
                                 speed: speed, updated: .now), "snapshot.json")

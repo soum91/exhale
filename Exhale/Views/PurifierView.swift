@@ -20,6 +20,8 @@ struct PurifierView: View {
                         if let code = purifier.speedCode, let spec = purifier.functions[code] { speedCard(code, spec) }
                         if let code = purifier.modeCode, let spec = purifier.functions[code], spec.isEnum { modeCard(code, spec) }
                         if !purifier.toggles.isEmpty { togglesCard }
+                        if purifier.displayCode != nil { displayGuardCard }
+                        ScenesCard()
                         if let code = purifier.timerCode, let spec = purifier.functions[code] { timerCard(code, spec) }
                         if purifier.filterCode != nil || purifier.filterResetCode != nil { filterCard }
                         if !purifier.readings.isEmpty || purifier.airQualityCode != nil { readingsCard }
@@ -177,6 +179,20 @@ struct PurifierView: View {
             }
         }
         .disabled(!purifier.info.online)
+    }
+
+    // MARK: Display guard
+
+    private var displayGuardCard: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Toggle(isOn: $store.keepDisplayOff) {
+                Label("Keep display off", systemImage: "moon.haze.fill").font(.headline)
+            }
+            .tint(accent)
+            Text("If the purifier turns its display back on by itself, Exhale switches it off again on the next reading. It can't stop the brief flash the firmware does on every command or when Wi-Fi drops.")
+                .font(.caption).foregroundStyle(.secondary)
+        }
+        .card()
     }
 
     // MARK: Timer

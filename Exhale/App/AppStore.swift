@@ -12,6 +12,19 @@ final class AppStore: ObservableObject {
     @Published var lastUpdate: Date?
     /// Codes with a command in flight, so the UI can show a spinner instead of flickering.
     @Published var pending: Set<String> = []
+    @Published var scenes: [AirScene] = SceneStore.load()
+    @Published var keepDisplayOff: Bool = Tweaks.values.keepDisplayOff {
+        didSet {
+            guard keepDisplayOff != Tweaks.values.keepDisplayOff else { return }
+            var t = Tweaks.values
+            t.keepDisplayOff = keepDisplayOff
+            t.displayCode = purifier?.displayCode
+            Tweaks.values = t
+            if keepDisplayOff, let p = purifier, let client { Task { await SceneEngine.enforceDisplay(p, client: client); await refresh() } }
+        }
+    }
+
+    static let shared = AppStore()
 
     private var client: TuyaClient?
     private var pollTask: Task<Void, Never>?
@@ -127,6 +140,10 @@ final class AppStore: ObservableObject {
             lastUpdate = .now
             Cache.save(p)
             record(p)
+            await SceneEngine.afterRefresh(p, client: client)
+            if let after = Cache.purifier, after.id == p.id, after.status != p.status, pending.isEmpty {
+                purifier = after
+            }
             if wasOn != p.isOn || Date().timeIntervalSince(lastWidgetReload) > 300 {
                 reloadWidgets()
             }
@@ -148,6 +165,13 @@ final class AppStore: ObservableObject {
 
     func set(_ code: String, _ value: JSONValue) {
         guard let client, let before = purifier else { return }
+        // Turning the display on by hand switches off "keep display off", or the next poll would undo it.
+        if code == (Tweaks.values.displayCode ?? before.displayCode), value.boolValue == true, Tweaks.values.keepDisplayOff {
+            var t = Tweaks.values
+            t.keepDisplayOff = false
+            Tweaks.values = t
+            keepDisplayOff = false
+        }
         let old = before.status[code]
         purifier = before.applying(code, value)
         pending.insert(code)
@@ -173,6 +197,40 @@ final class AppStore: ObservableObject {
     func togglePower() {
         guard let p = purifier, let code = p.powerCode else { return }
         set(code, .bool(!p.isOn))
+    }
+
+    // MARK: Scenes
+
+    func saveScene(_ s: AirScene) {
+        var list = SceneStore.load()
+        var scene = s
+        scene.armed = true
+        if let i = list.firstIndex(where: { $0.id == s.id }) { list[i] = scene } else { list.append(scene) }
+        SceneStore.save(list)
+        scenes = list
+        Geo.shared.sync()
+    }
+
+    func deleteScene(_ s: AirScene) {
+        let list = SceneStore.load().filter { $0.id != s.id }
+        SceneStore.save(list)
+        scenes = list
+        Geo.shared.sync()
+    }
+
+    func runScene(_ s: AirScene) async throws {
+        guard let client else { throw TuyaError(message: "Not signed in.") }
+        do {
+            try await SceneEngine.run(s, purifier: purifier, client: client)
+            scenes = SceneStore.load()
+            if let p = Cache.purifier, p.id == purifier?.id { purifier = p }
+            reloadWidgets()
+            try? await Task.sleep(nanoseconds: 1_500_000_000)
+            await refresh()
+        } catch {
+            handle(error)
+            throw error
+        }
     }
 
     // MARK: Background refresh

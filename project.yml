@@ -6,7 +6,7 @@ options:
 settings:
   base:
     SWIFT_VERSION: "5.10"
-    MARKETING_VERSION: "1.0.0"
+    MARKETING_VERSION: "1.1.0"
     CURRENT_PROJECT_VERSION: "1"
     CODE_SIGNING_ALLOWED: NO
     CODE_SIGNING_REQUIRED: NO
@@ -31,6 +31,8 @@ targets:
         ITSAppUsesNonExemptEncryption: false
         UIBackgroundModes: [fetch]
         BGTaskSchedulerPermittedIdentifiers: [com.soum91.exhale.refresh]
+        NSLocationWhenInUseUsageDescription: Exhale uses your location to run scenes when you arrive or leave home.
+        NSLocationAlwaysAndWhenInUseUsageDescription: Exhale runs your arrive and leave home scenes in the background, even when the app is closed. Choose Always for that to work.
         NSPhotoLibraryAddUsageDescription: Exhale saves the Smart Life login QR to Photos so you can pick it from Smart Life's scanner.
         LSApplicationQueriesSchemes: [smartlife, tuyasmart]
         CFBundleURLTypes:

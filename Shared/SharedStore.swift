@@ -4,27 +4,70 @@ import Foundation
 enum AppGroup {
     static let defaultID = "group.com.soum91.exhale"
 
-    /// AltStore rewrites group IDs and lists the real ones under ALTAppGroups, so try those first.
+    /// Sideloaders often rename the App Group (AltStore adds the team ID, Sideloadly can rewrite it
+    /// to match a new bundle ID), so read the group IDs this binary was actually signed with first.
     static var containerURL: URL { resolved.url }
 
     /// False when the sideload stripped the App Group, so the widget can't see the app's data.
     static var isShared: Bool { resolved.shared }
+    static var activeGroup: String? { resolved.group }
+    static var candidates: [String] { resolved.tried }
 
-    private static let resolved: (url: URL, shared: Bool) = {
-        var ids: [String] = []
+    private static let resolved: (url: URL, shared: Bool, group: String?, tried: [String]) = {
+        var ids: [String] = signedGroups()
         for bundle in [Bundle.main, appBundle].compactMap({ $0 }) {
             if let alt = bundle.object(forInfoDictionaryKey: "ALTAppGroups") as? [String] { ids += alt }
         }
         ids.append(defaultID)
-        for id in ids {
+        var unique: [String] = []
+        for id in ids where !unique.contains(id) { unique.append(id) }
+        for id in unique {
             if let url = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: id) {
-                return (url, true)
+                return (url, true, id, unique)
             }
         }
         let fallback = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
         try? FileManager.default.createDirectory(at: fallback, withIntermediateDirectories: true)
-        return (fallback, false)
+        return (fallback, false, nil, unique)
     }()
+
+    /// App Group IDs from this bundle's embedded.mobileprovision and its executable's code signature.
+    static func signedGroups() -> [String] {
+        var out: [String] = []
+        let bundle = Bundle.main
+        var files: [URL] = []
+        if let prov = bundle.url(forResource: "embedded", withExtension: "mobileprovision") { files.append(prov) }
+        if let exe = bundle.executableURL { files.append(exe) }
+        for url in files {
+            guard let data = try? Data(contentsOf: url, options: .mappedIfSafe) else { continue }
+            for g in groups(in: data) where !out.contains(g) { out.append(g) }
+        }
+        return out
+    }
+
+    private static func groups(in data: Data) -> [String] {
+        let key = Data("<key>com.apple.security.application-groups</key>".utf8)
+        let open = Data("<string>".utf8), close = Data("</string>".utf8), end = Data("</array>".utf8)
+        var out: [String] = []
+        var searchFrom = data.startIndex
+        while let k = data.range(of: key, in: searchFrom..<data.endIndex) {
+            guard let arrayEnd = data.range(of: end, in: k.upperBound..<data.endIndex) else { break }
+            var cursor = k.upperBound
+            while let o = data.range(of: open, in: cursor..<arrayEnd.lowerBound),
+                  let c = data.range(of: close, in: o.upperBound..<arrayEnd.lowerBound) {
+                if let s = String(data: data[o.upperBound..<c.lowerBound], encoding: .utf8) {
+                    let id = s.trimmingCharacters(in: .whitespacesAndNewlines)
+                    let valid = id.hasPrefix("group.") && id.unicodeScalars.allSatisfy {
+                        CharacterSet.alphanumerics.contains($0) || $0 == "." || $0 == "-" || $0 == "_"
+                    }
+                    if valid, !out.contains(id) { out.append(id) }
+                }
+                cursor = c.upperBound
+            }
+            searchFrom = arrayEnd.upperBound
+        }
+        return out
+    }
 
     /// The containing app's bundle when running inside the widget extension.
     private static var appBundle: Bundle? {

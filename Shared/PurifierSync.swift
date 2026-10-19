@@ -16,6 +16,8 @@ enum PurifierSync {
                 p.info = info
                 Cache.save(p)
                 if let pm = p.pm25 { History.append(pm) }
+                await SceneEngine.afterRefresh(p, client: client)
+                p = Cache.purifier ?? p
             }
         } catch {
             // Keep showing the last good reading.

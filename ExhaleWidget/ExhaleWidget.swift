@@ -119,7 +119,7 @@ struct EmptyState: View {
         VStack(alignment: .leading, spacing: 6) {
             Image(systemName: "aqi.medium").font(.title2).foregroundStyle(.white.opacity(0.7))
             Spacer()
-            Text(!entry.shared ? "Widget can't read app data. Reinstall with App Groups on." :
+            Text(!entry.shared ? "Widget can't reach Exhale's data (App Group: \(AppGroup.signedGroups().first ?? "none")). Open Exhale › Settings › Widget." :
                     entry.signedIn ? "Pick your purifier in Exhale." : "Open Exhale to sign in.")
                 .font(.system(size: 13, weight: .medium))
                 .foregroundStyle(.white.opacity(0.8))

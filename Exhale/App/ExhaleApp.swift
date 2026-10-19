@@ -4,8 +4,13 @@ import WidgetKit
 
 @main
 struct ExhaleApp: App {
-    @StateObject private var store = AppStore()
+    @StateObject private var store = AppStore.shared
     @Environment(\.scenePhase) private var phase
+
+    init() {
+        // Must exist at launch so iOS can deliver arrive/leave events when it relaunches the app in the background.
+        _ = Geo.shared
+    }
 
     var body: some Scene {
         WindowGroup {

@@ -38,12 +38,17 @@ struct SettingsView: View {
 
                 Section {
                     row("Widget data sharing", AppGroup.isShared ? "Working" : "Not available")
+                    row("App Group", AppGroup.activeGroup ?? "none")
+                    row("Signed groups", AppGroup.signedGroups().isEmpty ? "none" : AppGroup.signedGroups().joined(separator: "\n"))
+                    row("Bundle ID", Bundle.main.bundleIdentifier ?? "?")
                     Button("Refresh widgets") { WidgetCenter.shared.reloadAllTimelines() }
                 } header: {
                     Text("Widget")
                 } footer: {
                     if !AppGroup.isShared {
-                        Text("The sideload didn't keep the App Group, so the widget can't read the login or readings. In Sideloadly, turn off \"Remove app extensions\" and make sure App Groups aren't stripped, or use AltStore/SideStore.")
+                        Text(AppGroup.signedGroups().isEmpty
+                             ? "The sideloader signed Exhale without any App Group, so the widget has nowhere shared to read from. Screenshot this section and send it over."
+                             : "Exhale is signed with an App Group but iOS won't open it. Screenshot this section and send it over.")
                     }
                 }
 

@@ -6,7 +6,7 @@ options:
 settings:
   base:
     SWIFT_VERSION: "5.10"
-    MARKETING_VERSION: "1.3.0"
+    MARKETING_VERSION: "1.4.0"
     CURRENT_PROJECT_VERSION: "1"
     CODE_SIGNING_ALLOWED: NO
     CODE_SIGNING_REQUIRED: NO
@@ -33,6 +33,7 @@ targets:
         BGTaskSchedulerPermittedIdentifiers: [com.soum91.exhale.refresh]
         NSLocationWhenInUseUsageDescription: Exhale uses your location to run scenes when you arrive or leave home.
         NSLocationAlwaysAndWhenInUseUsageDescription: Exhale runs your arrive and leave home scenes in the background, even when the app is closed. Choose Always for that to work.
+        NSLocalNetworkUsageDescription: Exhale talks to your purifier directly over Wi-Fi for fan speed, display and instant control.
         NSPhotoLibraryAddUsageDescription: Exhale saves the Smart Life login QR to Photos so you can pick it from Smart Life's scanner.
         LSApplicationQueriesSchemes: [smartlife, tuyasmart]
         CFBundleURLTypes:

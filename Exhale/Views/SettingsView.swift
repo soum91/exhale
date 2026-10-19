@@ -25,6 +25,21 @@ struct SettingsView: View {
                 }
 
                 Section {
+                    NavigationLink {
+                        LocalControlView().environmentObject(store)
+                    } label: {
+                        HStack {
+                            Label("Wi-Fi control", systemImage: "wifi")
+                            Spacer()
+                            Text(store.localState.isConnected ? "Connected" : (store.local.host == nil ? "Set up" : "Off"))
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                } footer: {
+                    Text("Unlocks fan speed and display, which Tuya's cloud doesn't expose for this purifier.")
+                }
+
+                Section {
                     row("Readings logged", "\(store.history.count)")
                     if let first = store.history.first {
                         row("Since", first.t.formatted(date: .abbreviated, time: .shortened))

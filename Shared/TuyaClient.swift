@@ -187,6 +187,16 @@ actor TuyaClient {
         return (parse("functions"), parse("status"))
     }
 
+    /// Local data point id -> cloud code, for the points the cloud does know about.
+    func dpMap(id: String) async throws -> [String: String] {
+        let result = try await request("GET", "/v1.0/m/life/devices/\(id)/status")
+        var out: [String: String] = [:]
+        for r in (result as? [String: Any])?["dpStatusRelationDTOS"] as? [[String: Any]] ?? [] {
+            if let dp = r["dpId"], let code = r["statusCode"] as? String { out["\(dp)"] = code }
+        }
+        return out
+    }
+
     func send(id: String, _ commands: [(String, JSONValue)]) async throws {
         let list = commands.map { ["code": $0.0, "value": $0.1.any] }
         _ = try await request("POST", "/v1.1/m/thing/\(id)/commands", body: ["commands": list])

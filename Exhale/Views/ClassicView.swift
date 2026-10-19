@@ -140,9 +140,13 @@ struct ClassicView: View {
 
     /// Auto plus every speed the unit has. Auto comes from the speed list or, failing that, the mode list.
     private var fanControl: FanControl? {
-        guard let code = purifier.speedCode, let spec = purifier.functions[code] else { return nil }
         var opts: [FanOption] = []
         var current = 0
+        if purifier.speedCode == nil, let fan = store.local.fanDP, !store.localFanValues.isEmpty {
+            let values = store.localFanValues
+            for v in values { opts.append(FanOption(label: v.display, commands: [("dp:\(fan)", v)])) }
+            current = values.firstIndex(where: { $0 == store.localFan }) ?? 0
+        } else if let code = purifier.speedCode, let spec = purifier.functions[code] {
         let speedNow = purifier.string(code)
         if spec.isEnum, let range = spec.range {
             for r in range { opts.append(FanOption(label: r.lowercased() == "auto" ? "AUTO" : Fmt.label(r), commands: [(code, .string(r))])) }
@@ -151,6 +155,7 @@ struct ClassicView: View {
             let lo = Int(spec.min ?? 1), hi = Int(spec.max ?? 10), step = max(Int(spec.step ?? 1), 1)
             for v in stride(from: lo, through: hi, by: step) { opts.append(FanOption(label: "\(v)", commands: [(code, .int(v))])) }
             if let v = purifier.status[code]?.doubleValue { current = max(0, (Int(v) - lo) / step) }
+        } else { return nil }
         } else { return nil }
 
         let hasAuto = opts.contains { $0.label == "AUTO" }
@@ -235,6 +240,8 @@ struct ClassicView: View {
         if let d = purifier.displayCode {
             let on = purifier.bool(d) ?? false
             out.append(Pill(id: d, title: "Display", icon: "lightbulb", on: on) { store.set(d, .bool(!on)) })
+        } else if let d = store.local.displayDP {
+            out.append(Pill(id: "dp:\(d)", title: "Display", icon: "lightbulb", on: store.localDisplayOn ?? false) { store.toggleLocalDisplay() })
         }
         for t in purifier.toggles where t.code != purifier.displayCode && t.code != "sleep" {
             let on = purifier.bool(t.code) ?? false
@@ -287,9 +294,20 @@ struct ClassicView: View {
 
     private var moreContent: some View {
         VStack(spacing: 16) {
-            if purifier.displayCode != nil {
+            if purifier.displayCode != nil || store.local.displayDP != nil {
                 Toggle("Keep display off", isOn: $store.keepDisplayOff).card()
             }
+            NavigationLink {
+                LocalControlView().environmentObject(store)
+            } label: {
+                HStack {
+                    Label("Wi-Fi control", systemImage: "wifi")
+                    Spacer()
+                    Text(store.localState.isConnected ? "Connected" : "Set up").foregroundStyle(.secondary)
+                }
+                .card()
+            }
+            .buttonStyle(.plain)
             ForEach(purifier.extraFunctions, id: \.code) { spec in
                 GenericControl(spec: spec, value: purifier.status[spec.code], tint: green) { store.set(spec.code, $0) }
                     .card()

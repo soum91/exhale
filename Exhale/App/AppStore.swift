@@ -26,6 +26,15 @@ final class AppStore: ObservableObject {
 
     static let shared = AppStore()
 
+    // Wi-Fi (LAN) control
+    @Published var local = LocalConfig.stored
+    @Published var localDPS: [String: JSONValue] = [:]
+    @Published var localChanged: [String: Date] = [:]
+    @Published var localState: LocalState = .off
+    var link: LocalLink?
+    var localTask: Task<Void, Never>?
+    var cloudClient: TuyaClient? { client }
+
     private var client: TuyaClient?
     private var pollTask: Task<Void, Never>?
     private var lastWidgetReload = Date.distantPast
@@ -90,7 +99,12 @@ final class AppStore: ObservableObject {
         do {
             let spec = try await client.specification(id: device.id)
             let p = Purifier(info: device, functions: spec.functions, statusSpec: spec.status)
-            if p.id != purifier?.id { History.clear(); history = [] }
+            if p.id != purifier?.id {
+                History.clear(); history = []
+                stopLocal()
+                local = LocalConfig()
+                saveLocal()
+            }
             purifier = p
             Cache.save(p)
             record(p)
@@ -112,6 +126,7 @@ final class AppStore: ObservableObject {
 
     func startPolling() {
         stopPolling()
+        startLocal()
         guard purifier != nil, client != nil else { return }
         pollTask = Task { [weak self] in
             while !Task.isCancelled {
@@ -124,9 +139,11 @@ final class AppStore: ObservableObject {
     func stopPolling() {
         pollTask?.cancel()
         pollTask = nil
+        stopLocal()
     }
 
     func refresh() async {
+        if link != nil { await queryLocal() }
         guard let client, let current = purifier else { return }
         do {
             guard let info = try await client.device(id: current.id) else { return }
@@ -165,8 +182,44 @@ final class AppStore: ObservableObject {
 
     func set(_ code: String, _ value: JSONValue) { setMany([(code, value)]) }
 
-    /// Sends several data points as one command, so the purifier only reacts once.
+    /// Sends several data points as one command, so the purifier only reacts once. "dp:<id>" codes are raw
+    /// local data points; cloud codes go over Wi-Fi too when the local link speaks the same values.
     func setMany(_ commands: [(String, JSONValue)]) {
+        guard let before = purifier else { return }
+        var localCmds: [String: JSONValue] = [:]
+        var viaLocal: [(String, JSONValue)] = []
+        var cloudCmds: [(String, JSONValue)] = []
+        // In a batch, skip settings that are already right (one-off taps still go through).
+        let wanted = commands.count == 1 ? commands : commands.filter { $0.0.hasPrefix("dp:") || before.status[$0.0] != $0.1 }
+        for (code, value) in wanted {
+            if code.hasPrefix("dp:") {
+                localCmds[String(code.dropFirst(3))] = value
+            } else if let id = localID(forCloud: code) {
+                localCmds[id] = value
+                viaLocal.append((code, value))
+            } else {
+                cloudCmds.append((code, value))
+            }
+        }
+        if !localCmds.isEmpty {
+            var p = before
+            for (code, value) in viaLocal { p = p.applying(code, value) }
+            purifier = p
+            Task {
+                do {
+                    try await sendLocal(localCmds)
+                    if let p = purifier { Cache.save(p) }
+                    reloadWidgets()
+                } catch {
+                    if !viaLocal.isEmpty { setCloud(viaLocal) }
+                    handle(error)
+                }
+            }
+        }
+        if !cloudCmds.isEmpty { setCloud(cloudCmds) }
+    }
+
+    private func setCloud(_ commands: [(String, JSONValue)]) {
         guard let client, let before = purifier else { return }
         let cmds = commands.filter { before.status[$0.0] != $0.1 || commands.count == 1 }
         guard !cmds.isEmpty else { return }

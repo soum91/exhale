@@ -41,10 +41,16 @@ struct PurifierView: View {
                     VStack(spacing: 16) {
                         hero
                         PMChartView(samples: store.history, current: purifier.pm25)
-                        if let code = purifier.speedCode, let spec = purifier.functions[code] { speedCard(code, spec) }
+                        if let code = purifier.speedCode, let spec = purifier.functions[code] {
+                            speedCard(code, spec)
+                        } else if store.local.fanDP != nil, !store.localFanValues.isEmpty {
+                            localFanCard
+                        } else if store.local.fanDP == nil {
+                            wifiPromptCard
+                        }
                         if let code = purifier.modeCode, let spec = purifier.functions[code], spec.isEnum { modeCard(code, spec) }
                         if !purifier.toggles.isEmpty { togglesCard }
-                        if purifier.displayCode != nil { displayGuardCard }
+                        if purifier.displayCode != nil || store.local.displayDP != nil { displayGuardCard }
                         ScenesCard()
                         if let code = purifier.timerCode, let spec = purifier.functions[code] { timerCard(code, spec) }
                         if purifier.filterCode != nil || purifier.filterResetCode != nil { filterCard }
@@ -198,13 +204,62 @@ struct PurifierView: View {
 
     // MARK: Display guard
 
+    private var localFanCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                SectionTitle(text: "Fan speed")
+                Spacer()
+                Image(systemName: store.localState.isConnected ? "wifi" : "wifi.slash")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+            ChipRow(options: store.localFanValues.map(\.display), selected: store.localFan?.display, color: accent) { picked in
+                if let v = store.localFanValues.first(where: { $0.display == picked }) {
+                    store.setLocalFan(v, manualMode: true)
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .card()
+        .disabled(!controlsEnabled || !store.localState.isConnected)
+        .opacity(controlsEnabled && store.localState.isConnected ? 1 : 0.5)
+    }
+
+    private var wifiPromptCard: some View {
+        NavigationLink {
+            LocalControlView().environmentObject(store)
+        } label: {
+            HStack(spacing: 12) {
+                Image(systemName: "wifi").font(.title3).foregroundStyle(accent)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Unlock fan speed and display").font(.headline).foregroundStyle(.white)
+                    Text("Tuya's cloud hides them. Exhale can reach them over your Wi-Fi.")
+                        .font(.caption).foregroundStyle(.secondary).multilineTextAlignment(.leading)
+                }
+                Spacer()
+                Image(systemName: "chevron.right").foregroundStyle(.tertiary)
+            }
+            .card()
+        }
+        .buttonStyle(.plain)
+    }
+
     private var displayGuardCard: some View {
         VStack(alignment: .leading, spacing: 6) {
+            if store.local.displayDP != nil {
+                Toggle(isOn: Binding(get: { store.localDisplayOn ?? false }, set: { _ in store.toggleLocalDisplay() })) {
+                    Label("Display", systemImage: "lightbulb.fill").font(.headline)
+                }
+                .tint(accent)
+                .disabled(!store.localState.isConnected)
+                Divider().opacity(0.3)
+            }
             Toggle(isOn: $store.keepDisplayOff) {
                 Label("Keep display off", systemImage: "moon.haze.fill").font(.headline)
             }
             .tint(accent)
-            Text("If the purifier turns its display back on by itself, Exhale switches it off again on the next reading. It can't stop the brief flash the firmware does on every command or when Wi-Fi drops.")
+            Text(store.local.displayDP != nil
+                 ? "Over Wi-Fi the purifier reports the moment its display comes on, and Exhale switches it straight back off. That only works while Exhale is open and connected."
+                 : "If the purifier turns its display back on by itself, Exhale switches it off again on the next reading. It can't stop the brief flash the firmware does on every command or when Wi-Fi drops.")
                 .font(.caption).foregroundStyle(.secondary)
         }
         .card()

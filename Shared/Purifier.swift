@@ -7,6 +7,7 @@ struct DeviceInfo: Codable, Hashable, Identifiable {
     var productName: String
     var online: Bool
     var status: [String: JSONValue]
+    var localKey: String? = nil
 
     static func parse(_ d: [String: Any]) -> DeviceInfo? {
         guard let id = d["id"] as? String else { return nil }
@@ -23,7 +24,8 @@ struct DeviceInfo: Codable, Hashable, Identifiable {
                           category: (d["category"] as? String) ?? "",
                           productName: (d["product_name"] as? String) ?? (d["productName"] as? String) ?? "",
                           online: (d["online"] as? Bool) ?? ((d["online"] as? NSNumber)?.boolValue ?? true),
-                          status: status)
+                          status: status,
+                          localKey: (d["local_key"] as? String) ?? (d["localKey"] as? String))
     }
 
     /// Tuya category "kj" is air purifier.

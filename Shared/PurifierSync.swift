@@ -8,19 +8,29 @@ import WidgetKit
 enum PurifierSync {
     /// Pulls the latest status, logs PM2.5 and updates the cached copy. Returns the cache on failure.
     @discardableResult
-    static func refresh() async -> Purifier? {
-        guard let token = TokenStore.load(), var p = Cache.purifier else { return Cache.purifier }
+    static func refresh(source: String = "App") async -> Purifier? {
+        guard let token = TokenStore.load() else {
+            RefreshLog.add(source, ok: false, note: "No login found (shared storage)")
+            return Cache.purifier
+        }
+        guard var p = Cache.purifier else {
+            RefreshLog.add(source, ok: false, note: "No purifier selected")
+            return nil
+        }
         let client = TuyaClient(token: token)
         do {
             if let info = try await client.device(id: p.id) {
                 p.info = info
                 Cache.save(p)
                 if let pm = p.pm25 { History.append(pm) }
+                RefreshLog.add(source, ok: true, pm: p.pm25, note: info.online ? nil : "Purifier offline")
                 await SceneEngine.afterRefresh(p, client: client)
                 p = Cache.purifier ?? p
+            } else {
+                RefreshLog.add(source, ok: false, note: "Device not returned")
             }
         } catch {
-            // Keep showing the last good reading.
+            RefreshLog.add(source, ok: false, note: error.localizedDescription)
         }
         return p
     }
@@ -79,7 +89,7 @@ struct AirQualityIntent: AppIntent {
     static let description: IntentDescription? = IntentDescription("Reads the purifier's current PM2.5.")
 
     func perform() async throws -> some IntentResult & ReturnsValue<Double> & ProvidesDialog {
-        let p = await PurifierSync.refresh()
+        let p = await PurifierSync.refresh(source: "Shortcut")
         guard let pm = p?.pm25 else { throw TuyaError(message: "No PM2.5 reading yet.") }
         let text = "PM2.5 is \(Fmt.num(pm.rounded())) µg/m³, \(AQ.label(pm).lowercased())."
         return .result(value: pm, dialog: IntentDialog(stringLiteral: text))

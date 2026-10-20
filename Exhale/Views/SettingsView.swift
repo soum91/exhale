@@ -40,6 +40,20 @@ struct SettingsView: View {
                 }
 
                 Section {
+                    NavigationLink {
+                        CloudHistoryView().environmentObject(store)
+                    } label: {
+                        HStack {
+                            Label("Cloud history", systemImage: "icloud.and.arrow.down")
+                            Spacer()
+                            Text(CloudHistoryConfig.stored.isSet ? "On" : "Set up").foregroundStyle(.secondary)
+                        }
+                    }
+                    NavigationLink {
+                        RefreshLogView()
+                    } label: {
+                        Label("Refresh log", systemImage: "list.bullet.rectangle")
+                    }
                     row("Readings logged", "\(store.history.count)")
                     if let first = store.history.first {
                         row("Since", first.t.formatted(date: .abbreviated, time: .shortened))

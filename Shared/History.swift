@@ -40,6 +40,35 @@ enum History {
 
     static func clear() { AppGroup.remove(fileName) }
 
+    /// Adds readings from elsewhere (the cloud log). The cloud only records changes, so each value is held
+    /// until the next change, filled in every 5 minutes, which keeps flat stretches flat on the graph.
+    static func merge(_ events: [Sample]) {
+        guard !events.isEmpty else { return }
+        var filled: [Sample] = []
+        let sorted = events.sorted { $0.t < $1.t }
+        for (i, e) in sorted.enumerated() {
+            filled.append(e)
+            let next = i + 1 < sorted.count ? sorted[i + 1].t : min(Date(), e.t.addingTimeInterval(3600))
+            var t = e.t.addingTimeInterval(300)
+            while t < next.addingTimeInterval(-60) {
+                filled.append(Sample(t: t, pm: e.pm))
+                t = t.addingTimeInterval(300)
+            }
+        }
+        var all = load()
+        let existing = all.map(\.t).sorted()
+        func hasNear(_ d: Date) -> Bool {
+            var lo = 0, hi = existing.count
+            while lo < hi { let m = (lo + hi) / 2; if existing[m] < d { lo = m + 1 } else { hi = m } }
+            for j in [lo - 1, lo] where j >= 0 && j < existing.count {
+                if abs(existing[j].timeIntervalSince(d)) < 120 { return true }
+            }
+            return false
+        }
+        all += filled.filter { !hasNear($0.t) }
+        save(compact(all, now: Date()))
+    }
+
     private static func compact(_ samples: [Sample], now: Date) -> [Sample] {
         let oldest = now.addingTimeInterval(-keepDays * 86400)
         let rawFrom = now.addingTimeInterval(-48 * 3600)

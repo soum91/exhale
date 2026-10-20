@@ -133,7 +133,7 @@ final class Geo: NSObject, ObservableObject, CLLocationManagerDelegate {
             UIApplication.shared.endBackgroundTask(bg)
         }
         Task { @MainActor in
-            await PurifierSync.refresh()
+            await PurifierSync.refresh(source: "Location")
             for s in scenes {
                 let what = arrive ? "Arrived home" : "Left home"
                 do {

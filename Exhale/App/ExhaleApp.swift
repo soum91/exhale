@@ -31,7 +31,8 @@ struct ExhaleApp: App {
         }
         .backgroundTask(.appRefresh(AppStore.refreshID)) {
             await Self.scheduleRefreshAsync()
-            await PurifierSync.refresh()
+            await PurifierSync.refresh(source: "Background")
+            if let r = await CloudBackfill.run() { RefreshLog.add("Cloud history", ok: !r.contains("failed"), note: r) }
             await MainActor.run { WidgetCenter.shared.reloadAllTimelines() }
         }
     }

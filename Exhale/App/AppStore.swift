@@ -130,6 +130,13 @@ final class AppStore: ObservableObject {
         stopPolling()
         localWanted = true
         localRetry = 0
+        RefreshLog.add("App opened", ok: true, pm: purifier?.pm25)
+        Task {
+            if let r = await CloudBackfill.run() {
+                RefreshLog.add("Cloud history", ok: !r.contains("failed"), note: r)
+                self.history = History.load()
+            }
+        }
         startLocal()
         guard purifier != nil, client != nil else { return }
         pollTask = Task { [weak self] in

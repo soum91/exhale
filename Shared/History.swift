@@ -82,19 +82,21 @@ enum History {
         }
         var segments: [[ChartPoint]] = []
         var current: [ChartPoint] = []
-        var lastIndex: Int?
         for i in buckets.keys.sorted() {
             let b = buckets[i]!
             let center = start.addingTimeInterval((Double(i) + 0.5) * step)
             let date = min(center, b.last)
             let point = ChartPoint(date: date, value: b.sum / Double(b.n))
-            // Allow a couple of missing buckets before breaking the line (widget refreshes are sparse).
-            if let li = lastIndex, i - li > max(3, Int(3600 / step)) {
-                segments.append(current)
-                current = []
-            }
+            // One continuous line, Blueair style: gaps (app closed, no refresh) are bridged smoothly.
             current.append(point)
-            lastIndex = i
+        }
+        // Light 3-point smoothing takes the sensor jitter out without flattening real spikes much.
+        if current.count >= 5 {
+            let raw = current
+            for i in 1..<(raw.count - 1) {
+                let v = (raw[i - 1].value + 2 * raw[i].value + raw[i + 1].value) / 4
+                current[i] = ChartPoint(date: raw[i].date, value: v)
+            }
         }
         if !current.isEmpty { segments.append(current) }
         return segments

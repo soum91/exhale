@@ -20,17 +20,13 @@ struct LocalConfig: Codable, Equatable {
         set { AppGroup.write(newValue, "local.json") }
     }
 
-    /// Fan values sorted low to high when they look numeric.
+    /// The AC3250 takes exactly 1...10 on its fan point (anything else resets it to 1), so always offer all ten.
     var fanValues: [JSONValue] {
-        guard let fan = fanDP, let seen = observed[fan] else { return [] }
-        // Whole numbers: assume the Guardian app's 1...10 steps, plus anything higher we've actually seen.
-        let ints = seen.compactMap { v -> Int? in if case .int(let i) = v { return i }; return nil }
-        if ints.count == seen.count, let top = ints.max() {
-            _ = top
-            return (1...10).map { JSONValue.int($0) }   // AC3250 firmware: 1-10 only, anything else resets to 1
+        guard let fan = fanDP else { return [] }
+        let seen = observed[fan] ?? []
+        if seen.isEmpty || seen.contains(where: { $0.doubleValue != nil }) {
+            return (1...10).map { JSONValue.int($0) }
         }
-        let nums = seen.compactMap { $0.doubleValue }
-        if nums.count == seen.count { return seen.sorted { ($0.doubleValue ?? 0) < ($1.doubleValue ?? 0) } }
         return seen
     }
 }

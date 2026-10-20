@@ -16,6 +16,8 @@ jobs:
     env:
       GH_TOKEN: ${{ github.token }}
       APP: Exhale
+      # build-11 was tagged on a later commit by the old workflow; point it at the commit it was built from.
+      TAG_FIXES: build-11:43baeff0e759a6921797db97277b432c4b67a826
       INSTALL: Unsigned IPA. Sideload with AltStore, SideStore or Sideloadly. Keep app extensions on so the widget comes along.
     steps:
       - uses: actions/checkout@v4

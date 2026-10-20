@@ -13,6 +13,8 @@ jobs:
     runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Select Xcode
         run: sudo xcode-select -s /Applications/Xcode_16.4.app || true
@@ -46,19 +48,35 @@ jobs:
           codesign --force --sign - --timestamp=none --entitlements ExhaleWidget/ExhaleWidget.entitlements Payload/Exhale.app/PlugIns/ExhaleWidget.appex
           codesign --force --sign - --timestamp=none --entitlements Exhale/Exhale.entitlements Payload/Exhale.app
           codesign -d --entitlements - Payload/Exhale.app/PlugIns/ExhaleWidget.appex || true
-          zip -qr Exhale.ipa Payload
+          zip -qr "Exhale-build-${{ github.run_number }}.ipa" Payload
 
       - uses: actions/upload-artifact@v4
         with:
           name: Exhale-ipa
-          path: Exhale.ipa
+          path: Exhale-build-${{ github.run_number }}.ipa
+
+      - name: Changelog
+        run: |
+          prev=$(git tag --list 'build-*' --sort=-v:refname | head -1)
+          {
+            echo "## Exhale build ${{ github.run_number }}"
+            echo
+            echo "### Changes"
+            if [ -n "$prev" ]; then
+              git log "$prev"..HEAD --no-merges --pretty='- %s'
+            else
+              git log --no-merges --pretty='- %s'
+            fi
+            echo
+            echo "Unsigned IPA from ${{ github.sha }}. Sideload with AltStore, SideStore or Sideloadly, keeping app extensions so the widget comes along."
+          } > CHANGELOG_RELEASE.md
+          cat CHANGELOG_RELEASE.md
 
       - name: Publish release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: build-${{ github.run_number }}
           name: Exhale build ${{ github.run_number }}
-          body: |
-            Unsigned IPA built from ${{ github.sha }}. Sideload with AltStore, SideStore or Sideloadly. Keep app extensions on so the widget comes along.
-          files: Exhale.ipa
+          body_path: CHANGELOG_RELEASE.md
+          files: Exhale-build-${{ github.run_number }}.ipa
           make_latest: true

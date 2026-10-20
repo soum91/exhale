@@ -1,0 +1,13 @@
+{
+  "name": "Exhale",
+  "sourceName": "Exhale by soum91",
+  "sourceIdentifier": "io.github.soum91.exhale",
+  "subtitle": "Tuya air purifier control",
+  "description": "Controls Tuya/Smart Life air purifiers like the GermGuardian AC3250 over the cloud or local Wi-Fi, with a smooth PM2.5 history graph, scenes and home screen widgets.",
+  "developerName": "soum91",
+  "iconURL": "https://raw.githubusercontent.com/soum91/exhale/main/Exhale/Assets.xcassets/AppIcon.appiconset/icon.png",
+  "tintColor": "30B0C7",
+  "category": "utilities",
+  "website": "https://github.com/soum91/exhale",
+  "sourceURL": "https://raw.githubusercontent.com/soum91/exhale/source/source.json"
+}

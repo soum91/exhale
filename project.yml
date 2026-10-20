@@ -23,6 +23,8 @@ targets:
     info:
       path: Exhale/Info.plist
       properties:
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         CFBundleDisplayName: Exhale
         UILaunchScreen: {}
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
@@ -58,6 +60,8 @@ targets:
     info:
       path: ExhaleWidget/Info.plist
       properties:
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         CFBundleDisplayName: Exhale
         NSExtension:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension

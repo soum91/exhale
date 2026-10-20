@@ -20,6 +20,15 @@
       "screenshotURLs": [],
       "versions": [
         {
+          "version": "1.5.0.15",
+          "buildVersion": "15",
+          "date": "2026-10-20T20:21:11Z",
+          "localizedDescription": "- CI: version string carries the build number (<version>.<build>) (20d4263)",
+          "downloadURL": "https://github.com/soum91/exhale/releases/download/build-15/Exhale-1.5.0-build-15.ipa",
+          "size": 1462772,
+          "minOSVersion": "17.0"
+        },
+        {
           "version": "1.5.0",
           "buildVersion": "14",
           "date": "2026-10-20T18:52:13Z",
@@ -38,11 +47,11 @@
           "minOSVersion": "17.0"
         }
       ],
-      "version": "1.5.0",
-      "versionDate": "2026-10-20T18:52:13Z",
-      "versionDescription": "- CI: publish an AltStore-format source for FlareStore / AltStore / SideStore (e98b3a8)\n- Backfill script: repair mis-tagged releases [skip ci] (c7089fe)",
-      "downloadURL": "https://github.com/soum91/exhale/releases/download/build-14/Exhale-1.5.0-build-14.ipa",
-      "size": 1462738,
+      "version": "1.5.0.15",
+      "versionDate": "2026-10-20T20:21:11Z",
+      "versionDescription": "- CI: version string carries the build number (<version>.<build>) (20d4263)",
+      "downloadURL": "https://github.com/soum91/exhale/releases/download/build-15/Exhale-1.5.0-build-15.ipa",
+      "size": 1462772,
       "appPermissions": {}
     }
   ],

@@ -54,6 +54,9 @@ jobs:
           /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $BUILD" Payload/Exhale.app/Info.plist
           /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $BUILD" Payload/Exhale.app/PlugIns/ExhaleWidget.appex/Info.plist
           VERSION=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" Payload/Exhale.app/Info.plist)
+          # Sideloaders (FlareStore etc.) only compare the version string, so make it <version>.<build>.
+          /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $VERSION.$BUILD" Payload/Exhale.app/Info.plist
+          /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $VERSION.$BUILD" Payload/Exhale.app/PlugIns/ExhaleWidget.appex/Info.plist
           # Ad-hoc sign with the App Group entitlement so AltStore/Sideloadly keep it for the widget.
           codesign --force --sign - --timestamp=none --entitlements ExhaleWidget/ExhaleWidget.entitlements Payload/Exhale.app/PlugIns/ExhaleWidget.appex
           codesign --force --sign - --timestamp=none --entitlements Exhale/Exhale.entitlements Payload/Exhale.app

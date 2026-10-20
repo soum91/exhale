@@ -32,6 +32,8 @@ final class AppStore: ObservableObject {
     @Published var localChanged: [String: Date] = [:]
     @Published var localState: LocalState = .off
     var link: LocalLink?
+    var localWanted = false
+    var localRetry = 0
     var localTask: Task<Void, Never>?
     var cloudClient: TuyaClient? { client }
 
@@ -126,6 +128,8 @@ final class AppStore: ObservableObject {
 
     func startPolling() {
         stopPolling()
+        localWanted = true
+        localRetry = 0
         startLocal()
         guard purifier != nil, client != nil else { return }
         pollTask = Task { [weak self] in
@@ -139,6 +143,7 @@ final class AppStore: ObservableObject {
     func stopPolling() {
         pollTask?.cancel()
         pollTask = nil
+        localWanted = false
         stopLocal()
     }
 

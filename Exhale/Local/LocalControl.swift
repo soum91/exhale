@@ -21,6 +21,11 @@ struct LocalConfig: Codable, Equatable {
     /// Fan values sorted low to high when they look numeric.
     var fanValues: [JSONValue] {
         guard let fan = fanDP, let seen = observed[fan] else { return [] }
+        // Whole numbers: assume the Guardian app's 1...10 steps, plus anything higher we've actually seen.
+        let ints = seen.compactMap { v -> Int? in if case .int(let i) = v { return i }; return nil }
+        if ints.count == seen.count, let top = ints.max() {
+            return (1...max(10, top)).map { JSONValue.int($0) }
+        }
         let nums = seen.compactMap { $0.doubleValue }
         if nums.count == seen.count { return seen.sorted { ($0.doubleValue ?? 0) < ($1.doubleValue ?? 0) } }
         return seen
@@ -79,6 +84,7 @@ extension AppStore {
                 self.local.version = v
                 self.saveLocal()
                 self.localState = .connected(v)
+                self.localRetry = 0
                 self.receiveLocal(result.1)
                 if self.local.codeMap.isEmpty, let client = self.cloudClient {
                     if let map = try? await client.dpMap(id: devId) {
@@ -87,7 +93,13 @@ extension AppStore {
                     }
                 }
             } catch {
-                self?.localState = .failed("Couldn't connect over Wi-Fi: \(error.localizedDescription)")
+                self?.localTask = nil
+                if let self, self.localWanted, self.localRetry > 0 {
+                    self.localClosed(error.localizedDescription)
+                } else {
+                    self?.localState = .failed("Couldn't connect over Wi-Fi: \(error.localizedDescription)")
+                }
+                return
             }
             self?.localTask = nil
         }
@@ -103,7 +115,20 @@ extension AppStore {
 
     func localClosed(_ why: String) {
         link = nil
-        localState = .failed(why)
+        guard localWanted, local.enabled, local.host != nil else {
+            localState = .failed(why)
+            return
+        }
+        // Tuya devices drop idle links and only allow one local client (the Guardian app can bump us),
+        // so keep trying quietly with a growing delay while Exhale is open.
+        localRetry = min(localRetry + 1, 6)
+        let delay = UInt64([2, 3, 5, 10, 20, 30][localRetry - 1])
+        localState = .searching("Reconnecting…")
+        Task { [weak self] in
+            try? await Task.sleep(nanoseconds: delay * 1_000_000_000)
+            guard let self, self.localWanted, self.link == nil, self.localTask == nil else { return }
+            self.startLocal()
+        }
     }
 
     func reconnectLocal() {

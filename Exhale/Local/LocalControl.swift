@@ -8,6 +8,8 @@ struct LocalConfig: Codable, Equatable {
     var version: Double?
     var fanDP: String?
     var displayDP: String?
+    /// True when the purifier stores the display backwards (true = screen off).
+    var displayInverted: Bool = false
     /// Every value seen per data point, in the order first seen. Used to build the fan slider.
     var observed: [String: [JSONValue]] = [:]
     /// Local data point id -> cloud code, from Tuya.
@@ -195,8 +197,9 @@ extension AppStore {
         }
         if changed { saveLocal() }
         // The display came on by itself: knock it straight back off.
-        if keepDisplayOff, let d = local.displayDP, dps[d]?.boolValue == true, purifier?.isOn != false {
-            Task { try? await self.sendLocal([d: .bool(false)]) }
+        if keepDisplayOff, let d = local.displayDP, let raw = dps[d]?.boolValue, raw != local.displayInverted,
+           purifier?.isOn != false {
+            Task { try? await self.sendLocal([d: .bool(self.local.displayInverted)]) }
         }
     }
 
@@ -226,7 +229,9 @@ extension AppStore {
 
     var localFanValues: [JSONValue] { local.fanValues }
     var localFan: JSONValue? { local.fanDP.flatMap { localDPS[$0] } }
-    var localDisplayOn: Bool? { local.displayDP.flatMap { localDPS[$0]?.boolValue } }
+    var localDisplayOn: Bool? {
+        local.displayDP.flatMap { localDPS[$0]?.boolValue }.map { $0 != local.displayInverted }
+    }
 
     func setLocalFan(_ v: JSONValue, manualMode: Bool) {
         guard let fan = local.fanDP else { return }
@@ -242,6 +247,7 @@ extension AppStore {
         guard let d = local.displayDP else { return }
         let on = localDisplayOn ?? false
         if !on, keepDisplayOff { keepDisplayOff = false }
-        setMany([("dp:\(d)", .bool(!on))])
+        // Raw value that means the new state.
+        setMany([("dp:\(d)", .bool(!on != local.displayInverted))])
     }
 }

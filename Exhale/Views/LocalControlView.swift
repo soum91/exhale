@@ -55,10 +55,21 @@ struct LocalControlView: View {
             Section {
                 mappingRow("Fan speed", dp: store.local.fanDP, values: store.local.fanValues.map(\.display))
                 mappingRow("Display", dp: store.local.displayDP, values: nil)
+                if store.local.displayDP != nil {
+                    Toggle("Display value is inverted", isOn: Binding(get: { store.local.displayInverted }, set: {
+                        store.local.displayInverted = $0
+                        store.saveLocal()
+                    }))
+                    HStack {
+                        Text("Screen right now")
+                        Spacer()
+                        Text(store.localDisplayOn.map { $0 ? "On" : "Off" } ?? "–").foregroundStyle(.secondary)
+                    }
+                }
             } header: {
                 Text("Mapped controls")
             } footer: {
-                Text("Open the Guardian app next to this screen. Slide the fan through every speed from 1 to 10, then flip Display on and off. The data point that lights up is the one: tap it and pick what it is.")
+                Text("Open the Guardian app next to this screen. Slide the fan through every speed from 1 to 10, then flip Display on and off. The data point that lights up is the one: tap it and pick what it is. If \"Screen right now\" says Off while the screen is lit, turn on Inverted.")
             }
 
             Section {

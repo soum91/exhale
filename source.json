@@ -1,0 +1,41 @@
+{
+  "name": "Exhale by soum91",
+  "identifier": "io.github.soum91.exhale",
+  "subtitle": "Tuya air purifier control",
+  "description": "Controls Tuya/Smart Life air purifiers like the GermGuardian AC3250 over the cloud or local Wi-Fi, with a smooth PM2.5 history graph, scenes and home screen widgets.",
+  "iconURL": "https://raw.githubusercontent.com/soum91/exhale/main/Exhale/Assets.xcassets/AppIcon.appiconset/icon.png",
+  "website": "https://github.com/soum91/exhale",
+  "sourceURL": "https://raw.githubusercontent.com/soum91/exhale/source/source.json",
+  "tintColor": "30B0C7",
+  "apps": [
+    {
+      "name": "Exhale",
+      "bundleIdentifier": "com.soum91.exhale",
+      "developerName": "soum91",
+      "subtitle": "Tuya air purifier control",
+      "localizedDescription": "Controls Tuya/Smart Life air purifiers like the GermGuardian AC3250 over the cloud or local Wi-Fi, with a smooth PM2.5 history graph, scenes and home screen widgets.",
+      "iconURL": "https://raw.githubusercontent.com/soum91/exhale/main/Exhale/Assets.xcassets/AppIcon.appiconset/icon.png",
+      "tintColor": "30B0C7",
+      "category": "utilities",
+      "screenshotURLs": [],
+      "versions": [
+        {
+          "version": "1.5.0",
+          "buildVersion": "13",
+          "date": "2026-10-20T18:47:40Z",
+          "localizedDescription": "- No code changes since build-11 (rebuild)",
+          "downloadURL": "https://github.com/soum91/exhale/releases/download/build-13/Exhale-1.5.0-build-13.ipa",
+          "size": 1462868,
+          "minOSVersion": "17.0"
+        }
+      ],
+      "version": "1.5.0",
+      "versionDate": "2026-10-20T18:47:40Z",
+      "versionDescription": "- No code changes since build-11 (rebuild)",
+      "downloadURL": "https://github.com/soum91/exhale/releases/download/build-13/Exhale-1.5.0-build-13.ipa",
+      "size": 1462868,
+      "appPermissions": {}
+    }
+  ],
+  "news": []
+}

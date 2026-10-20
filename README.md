@@ -24,7 +24,7 @@ Tuya's sharing API has no history endpoint, so readings are logged on the phone:
 
 ## Build
 
-Push to `main` (or run the workflow manually) and GitHub Actions builds `Exhale.ipa` and publishes it as a release. The app and widget are ad-hoc signed with the `group.com.soum91.exhale` App Group so the widget can read the login and readings. Sideload with AltStore, SideStore or Sideloadly with app extensions kept. If Settings shows "Widget data sharing: Not available", the sideloader stripped the App Group.
+Push to `main` (or run the workflow manually) and GitHub Actions builds `Exhale-<version>-build-<N>.ipa` and publishes it as a release with a changelog of what changed since the previous build. The app and widget are ad-hoc signed with the `group.com.soum91.exhale` App Group so the widget can read the login and readings. Sideload with AltStore, SideStore or Sideloadly with app extensions kept. If Settings shows "Widget data sharing: Not available", the sideloader stripped the App Group.
 
 Local build: `brew install xcodegen && xcodegen generate`, then open `Exhale.xcodeproj`.
 

@@ -26,7 +26,8 @@ struct LocalConfig: Codable, Equatable {
         // Whole numbers: assume the Guardian app's 1...10 steps, plus anything higher we've actually seen.
         let ints = seen.compactMap { v -> Int? in if case .int(let i) = v { return i }; return nil }
         if ints.count == seen.count, let top = ints.max() {
-            return (1...max(10, top)).map { JSONValue.int($0) }
+            _ = top
+            return (1...10).map { JSONValue.int($0) }   // AC3250 firmware: 1-10 only, anything else resets to 1
         }
         let nums = seen.compactMap { $0.doubleValue }
         if nums.count == seen.count { return seen.sorted { ($0.doubleValue ?? 0) < ($1.doubleValue ?? 0) } }

@@ -21,6 +21,15 @@
       "versions": [
         {
           "version": "1.5.0",
+          "buildVersion": "14",
+          "date": "2026-10-20T18:52:13Z",
+          "localizedDescription": "- CI: publish an AltStore-format source for FlareStore / AltStore / SideStore (e98b3a8)\n- Backfill script: repair mis-tagged releases [skip ci] (c7089fe)",
+          "downloadURL": "https://github.com/soum91/exhale/releases/download/build-14/Exhale-1.5.0-build-14.ipa",
+          "size": 1462738,
+          "minOSVersion": "17.0"
+        },
+        {
+          "version": "1.5.0",
           "buildVersion": "13",
           "date": "2026-10-20T18:47:40Z",
           "localizedDescription": "- No code changes since build-11 (rebuild)",
@@ -30,10 +39,10 @@
         }
       ],
       "version": "1.5.0",
-      "versionDate": "2026-10-20T18:47:40Z",
-      "versionDescription": "- No code changes since build-11 (rebuild)",
-      "downloadURL": "https://github.com/soum91/exhale/releases/download/build-13/Exhale-1.5.0-build-13.ipa",
-      "size": 1462868,
+      "versionDate": "2026-10-20T18:52:13Z",
+      "versionDescription": "- CI: publish an AltStore-format source for FlareStore / AltStore / SideStore (e98b3a8)\n- Backfill script: repair mis-tagged releases [skip ci] (c7089fe)",
+      "downloadURL": "https://github.com/soum91/exhale/releases/download/build-14/Exhale-1.5.0-build-14.ipa",
+      "size": 1462738,
       "appPermissions": {}
     }
   ],

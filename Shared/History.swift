@@ -17,9 +17,17 @@ enum History {
     private static let fileName = "pm-history.json"
     private static let keepDays: Double = 45
 
+    /// Union of every stored copy (app, widget, private backup), so a sparse or stale copy can never
+    /// wipe out readings another one has.
     static func load() -> [Sample] {
-        guard let rows = AppGroup.read([[Double]].self, fileName) else { return [] }
-        return rows.compactMap { r in r.count >= 2 ? Sample(t: Date(timeIntervalSince1970: r[0]), pm: r[1]) : nil }
+        var byMinute: [Int: Sample] = [:]
+        for rows in AppGroup.readAll([[Double]].self, fileName) {
+            for r in rows where r.count >= 2 {
+                let key = Int(r[0] / 30)
+                if byMinute[key] == nil { byMinute[key] = Sample(t: Date(timeIntervalSince1970: r[0]), pm: r[1]) }
+            }
+        }
+        return byMinute.values.sorted { $0.t < $1.t }
     }
 
     private static func save(_ samples: [Sample]) {
@@ -39,6 +47,12 @@ enum History {
     }
 
     static func clear() { AppGroup.remove(fileName) }
+
+    /// Writes the merged history back to every copy.
+    static func resave() {
+        let all = load()
+        if !all.isEmpty { save(compact(all, now: Date())) }
+    }
 
     /// Adds readings from elsewhere (the cloud log). The cloud only records changes, so each value is held
     /// until the next change, filled in every 5 minutes, which keeps flat stretches flat on the graph.

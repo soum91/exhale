@@ -34,6 +34,17 @@ struct AirEntry: TimelineEntry {
     }
 }
 
+final class OnceGate: @unchecked Sendable {
+    private var done = false
+    private let lock = NSLock()
+    func fire() -> Bool {
+        lock.lock(); defer { lock.unlock() }
+        if done { return false }
+        done = true
+        return true
+    }
+}
+
 struct AirProvider: TimelineProvider {
     func placeholder(in context: Context) -> AirEntry { .preview }
 
@@ -43,11 +54,18 @@ struct AirProvider: TimelineProvider {
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<AirEntry>) -> Void) {
-        Task {
-            await PurifierSync.refresh(source: "Widget")
+        let once = OnceGate()
+        func finish() {
+            guard once.fire() else { return }
             let entry = AirEntry.make(Cache.snapshot)
             // WidgetKit treats this as a hint; real cadence is roughly every 15-30 min.
             completion(Timeline(entries: [entry], policy: .after(Date().addingTimeInterval(15 * 60))))
+        }
+        // Never leave iOS waiting: if the network is slow, show the cached reading after 8 s.
+        DispatchQueue.global().asyncAfter(deadline: .now() + 8) { finish() }
+        Task {
+            await PurifierSync.refresh(source: "Widget")
+            finish()
         }
     }
 }

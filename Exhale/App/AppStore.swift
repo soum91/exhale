@@ -131,6 +131,11 @@ final class AppStore: ObservableObject {
         localWanted = true
         localRetry = 0
         RefreshLog.add("App opened", ok: true, pm: purifier?.pm25)
+        // Re-save everything so freshly named App Groups (after a reinstall) get the data, then wake the widget.
+        if let t = TokenStore.load() { TokenStore.save(t) }
+        if let p = Cache.purifier { Cache.save(p) }
+        History.resave()
+        WidgetCenter.shared.reloadAllTimelines()
         Task {
             if let r = await CloudBackfill.run() {
                 RefreshLog.add("Cloud history", ok: !r.contains("failed"), note: r)

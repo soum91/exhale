@@ -35,12 +35,15 @@ enum AppGroup {
                 if first == nil { first = id }
             }
         }
+        // A private copy in this process's own container. It survives a sideload reinstall even when the
+        // sideloader hands out freshly named App Groups (which start empty), so nothing gets lost.
+        let priv = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("ExhaleData", isDirectory: true)
+        try? FileManager.default.createDirectory(at: priv, withIntermediateDirectories: true)
         if let first, let url = urls.first {
-            return (url, true, first, unique, urls)
+            return (url, true, first, unique, urls + [priv])
         }
-        let fallback = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-        try? FileManager.default.createDirectory(at: fallback, withIntermediateDirectories: true)
-        return (fallback, false, nil, unique, [fallback])
+        return (priv, false, nil, unique, [priv])
     }()
 
     /// App Group IDs from this bundle's embedded.mobileprovision and its executable's code signature.
@@ -89,6 +92,21 @@ enum AppGroup {
     }
 
     static func file(_ name: String) -> URL { containerURL.appendingPathComponent(name) }
+
+    /// Every readable copy of a file, newest first.
+    static func readAll<T: Decodable>(_ type: T.Type, _ name: String) -> [T] {
+        let dec = JSONDecoder()
+        dec.dateDecodingStrategy = .secondsSince1970
+        return containers
+            .map { $0.appendingPathComponent(name) }
+            .compactMap { url -> (URL, Date)? in
+                guard let attrs = try? FileManager.default.attributesOfItem(atPath: url.path),
+                      let date = attrs[.modificationDate] as? Date else { return nil }
+                return (url, date)
+            }
+            .sorted { $0.1 > $1.1 }
+            .compactMap { (try? Data(contentsOf: $0.0)).flatMap { try? dec.decode(T.self, from: $0) } }
+    }
 
     static func read<T: Decodable>(_ type: T.Type, _ name: String) -> T? {
         let newest = containers

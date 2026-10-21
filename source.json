@@ -20,6 +20,15 @@
       "screenshotURLs": [],
       "versions": [
         {
+          "version": "1.5.0.16",
+          "buildVersion": "16",
+          "date": "2026-10-21T05:24:08Z",
+          "localizedDescription": "- Keep history safe across reinstalls (private backup + merged copies); widget never hangs on slow network (0f39845)",
+          "downloadURL": "https://github.com/soum91/exhale/releases/download/build-16/Exhale-1.5.0-build-16.ipa",
+          "size": 1472850,
+          "minOSVersion": "17.0"
+        },
+        {
           "version": "1.5.0.15",
           "buildVersion": "15",
           "date": "2026-10-20T20:21:11Z",
@@ -47,11 +56,11 @@
           "minOSVersion": "17.0"
         }
       ],
-      "version": "1.5.0.15",
-      "versionDate": "2026-10-20T20:21:11Z",
-      "versionDescription": "- CI: version string carries the build number (<version>.<build>) (20d4263)",
-      "downloadURL": "https://github.com/soum91/exhale/releases/download/build-15/Exhale-1.5.0-build-15.ipa",
-      "size": 1462772,
+      "version": "1.5.0.16",
+      "versionDate": "2026-10-21T05:24:08Z",
+      "versionDescription": "- Keep history safe across reinstalls (private backup + merged copies); widget never hangs on slow network (0f39845)",
+      "downloadURL": "https://github.com/soum91/exhale/releases/download/build-16/Exhale-1.5.0-build-16.ipa",
+      "size": 1472850,
       "appPermissions": {}
     }
   ],

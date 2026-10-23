@@ -141,10 +141,12 @@ struct PurifierView: View {
     private func speedCard(_ code: String, _ spec: DPSpec) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             SectionTitle(text: "Fan speed")
-            if spec.isEnum, let options = spec.range {
-                ChipRow(options: options, selected: purifier.string(code), color: accent, pending: store.pending.contains(code)) {
-                    store.set(code, .string($0))
-                }
+            if spec.isEnum, let options = spec.range, !options.isEmpty {
+                DiscreteFanSlider(
+                    labels: options.map(Fmt.label),
+                    selectedIndex: options.firstIndex(of: purifier.string(code) ?? "") ?? 0,
+                    tint: accent
+                ) { store.set(code, .string(options[$0])) }
             } else if spec.isInt {
                 IntSlider(spec: spec, value: purifier.status[code]?.doubleValue ?? spec.min ?? 0, tint: accent) {
                     store.set(code, .int($0))
@@ -212,11 +214,12 @@ struct PurifierView: View {
                 Image(systemName: store.localState.isConnected ? "wifi" : "wifi.slash")
                     .font(.caption).foregroundStyle(.secondary)
             }
-            ChipRow(options: store.localFanValues.map(\.display), selected: store.localFan?.display, color: accent) { picked in
-                if let v = store.localFanValues.first(where: { $0.display == picked }) {
-                    store.setLocalFan(v, manualMode: true)
-                }
-            }
+            let values = store.localFanValues
+            DiscreteFanSlider(
+                labels: values.map(\.display),
+                selectedIndex: values.firstIndex(of: store.localFan ?? .null) ?? 0,
+                tint: accent
+            ) { store.setLocalFan(values[$0], manualMode: true) }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .card()
@@ -443,6 +446,48 @@ struct ChipRow: View {
             }
         }
         .sensoryFeedback(.selection, trigger: selected)
+    }
+}
+
+/// A stepped slider for fan speed enumerations and mapped Tuya LAN data points.
+struct DiscreteFanSlider: View {
+    let labels: [String]
+    let selectedIndex: Int
+    let tint: Color
+    let commit: (Int) -> Void
+    @State private var dragging: Double?
+
+    var body: some View {
+        let last = max(labels.count - 1, 0)
+        let current = min(max(selectedIndex, 0), last)
+        let shown = min(max(Int((dragging ?? Double(current)).rounded()), 0), last)
+        VStack(alignment: .leading, spacing: 10) {
+            Text(labels.isEmpty ? "Unavailable" : labels[shown])
+                .font(.system(size: 22, weight: .semibold, design: .rounded))
+            Slider(
+                value: Binding(get: { dragging ?? Double(current) }, set: { dragging = $0 }),
+                in: 0...Double(max(last, 1)),
+                step: 1,
+                onEditingChanged: { editing in
+                    guard !editing, let value = dragging else { return }
+                    let chosen = min(max(Int(value.rounded()), 0), last)
+                    if chosen != current { commit(chosen) }
+                    dragging = nil
+                }
+            )
+            .tint(tint)
+            .disabled(last < 1)
+            HStack(spacing: 0) {
+                ForEach(Array(labels.enumerated()), id: \.offset) { index, label in
+                    Text(label)
+                        .font(.system(size: 11))
+                        .foregroundStyle(index == shown ? tint : Color.secondary)
+                        .frame(maxWidth: .infinity)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.7)
+                }
+            }
+        }
     }
 }
 

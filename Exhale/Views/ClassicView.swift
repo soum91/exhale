@@ -142,7 +142,8 @@ struct ClassicView: View {
     private var fanControl: FanControl? {
         var opts: [FanOption] = []
         var current = 0
-        if purifier.speedCode == nil, let fan = store.local.fanDP, !store.localFanValues.isEmpty {
+        if let fan = store.local.fanDP, !store.localFanValues.isEmpty,
+           (store.localState.isConnected || purifier.speedCode == nil) {
             let values = store.localFanValues
             for v in values { opts.append(FanOption(label: v.display, commands: [("dp:\(fan)", v)])) }
             current = values.firstIndex(where: { $0 == store.localFan }) ?? 0
@@ -215,8 +216,8 @@ struct ClassicView: View {
             }
             .frame(height: 44)
         }
-        .disabled(!active)
-        .opacity(active ? 1 : 0.5)
+        .disabled(!active || (purifier.speedCode == nil && !store.localState.isConnected))
+        .opacity(active && (purifier.speedCode != nil || store.localState.isConnected) ? 1 : 0.5)
     }
 
     // MARK: Bottom buttons

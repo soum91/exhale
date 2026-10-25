@@ -60,6 +60,7 @@ struct TogglePurifierIntent: AppIntent {
         try await PurifierSync.setPower(nil)
         #if canImport(WidgetKit)
         WidgetCenter.shared.reloadAllTimelines()
+        if #available(iOS 18.0, *) { ControlCenter.shared.reloadAllControls() }
         #endif
         return .result()
     }
@@ -79,6 +80,7 @@ struct SetPurifierPowerIntent: AppIntent {
         try await PurifierSync.setPower(on)
         #if canImport(WidgetKit)
         WidgetCenter.shared.reloadAllTimelines()
+        if #available(iOS 18.0, *) { ControlCenter.shared.reloadAllControls() }
         #endif
         return .result()
     }

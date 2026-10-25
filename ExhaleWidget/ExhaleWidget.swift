@@ -344,6 +344,8 @@ struct ExhaleWidget: Widget {
 @main
 struct ExhaleWidgetBundle: WidgetBundle {
     var body: some Widget {
+        if #available(iOS 18.0, *) { PurifierPowerControl(); PurifierActionControl() }
+
         ExhaleWidget()
     }
 }

@@ -276,7 +276,8 @@ struct CircularView: View {
     var body: some View {
         let pm = entry.snapshot?.pm25
         Gauge(value: min(pm ?? 0, 100), in: 0...100) {
-            Text("PM")
+            Image(systemName: "aqi.medium")
+                .font(.caption2)
         } currentValueLabel: {
             Text(AQ.value(pm))
         }
@@ -341,11 +342,57 @@ struct ExhaleWidget: Widget {
     }
 }
 
+// Dedicated interactive 1-slot Lock Screen switch for purifier power.
+struct ExhalePowerWidget: Widget {
+    var body: some WidgetConfiguration {
+        StaticConfiguration(kind: "ExhalePower", provider: AirProvider()) { entry in
+            ExhalePowerWidgetView(entry: entry)
+                .containerBackground(for: .widget) { Color.clear }
+        }
+        .configurationDisplayName("Purifier power")
+        .description("A compact power switch for your selected purifier.")
+        .supportedFamilies([.accessoryCircular, .accessoryRectangular])
+    }
+}
+
+struct ExhalePowerWidgetView: View {
+    @Environment(\.widgetFamily) private var family
+    let entry: AirEntry
+
+    var body: some View {
+        Group {
+            if let snap = entry.snapshot, snap.hasPower {
+                Button(intent: TogglePurifierIntent()) {
+                    if family == .accessoryCircular {
+                        ZStack {
+                            AccessoryWidgetBackground()
+                            Image(systemName: snap.isOn ? "fan.fill" : "power")
+                                .font(.system(size: 21, weight: .semibold))
+                        }
+                    } else {
+                        Label(snap.isOn ? "Purifier on" : "Purifier off",
+                              systemImage: snap.isOn ? "fan.fill" : "power")
+                            .font(.headline)
+                    }
+                }
+                .buttonStyle(.plain)
+            } else {
+                ZStack {
+                    if family == .accessoryCircular { AccessoryWidgetBackground() }
+                    Image(systemName: "fan")
+                        .font(.system(size: 21, weight: .medium))
+                }
+            }
+        }
+    }
+}
+
 @main
 struct ExhaleWidgetBundle: WidgetBundle {
     var body: some Widget {
         if #available(iOS 18.0, *) { PurifierPowerControl(); PurifierActionControl() }
 
         ExhaleWidget()
+        ExhalePowerWidget()
     }
 }

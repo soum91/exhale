@@ -20,6 +20,15 @@
       "screenshotURLs": [],
       "versions": [
         {
+          "version": "1.5.0.19",
+          "buildVersion": "19",
+          "date": "2026-10-25T18:04:51Z",
+          "localizedDescription": "- Add icon-based 1-slot purifier power widget (d212a1f)",
+          "downloadURL": "https://github.com/soum91/exhale/releases/download/build-19/Exhale-1.5.0-build-19.ipa",
+          "size": 1532086,
+          "minOSVersion": "17.0"
+        },
+        {
           "version": "1.5.0.18",
           "buildVersion": "18",
           "date": "2026-10-25T13:25:11Z",
@@ -74,11 +83,11 @@
           "minOSVersion": "17.0"
         }
       ],
-      "version": "1.5.0.18",
-      "versionDate": "2026-10-25T13:25:11Z",
-      "versionDescription": "- Add native purifier power, fan, mode and display controls (af23dff)",
-      "downloadURL": "https://github.com/soum91/exhale/releases/download/build-18/Exhale-1.5.0-build-18.ipa",
-      "size": 1525171,
+      "version": "1.5.0.19",
+      "versionDate": "2026-10-25T18:04:51Z",
+      "versionDescription": "- Add icon-based 1-slot purifier power widget (d212a1f)",
+      "downloadURL": "https://github.com/soum91/exhale/releases/download/build-19/Exhale-1.5.0-build-19.ipa",
+      "size": 1532086,
       "appPermissions": {}
     }
   ],

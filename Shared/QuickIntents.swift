@@ -8,6 +8,11 @@ enum PurifierQuickAction: String, AppEnum {
     var symbol: String { self == .display ? "lightbulb" : self == .sleep ? "moon.fill" : "fan.fill" }
 }
 struct PurifierActionIntent: LiveActivityIntent {
+    #if WIDGET_EXTENSION
+    // The widget extension cannot be launched to run intents on this iOS, so
+    // Shortcuts must only see (and run) the copy inside the app.
+    static let isDiscoverable = false
+    #endif
     static var title: LocalizedStringResource = "Control Air Purifier"
     @Parameter(title: "Action") var action: PurifierQuickAction
     init() { action = .auto }
@@ -22,6 +27,11 @@ struct PurifierActionIntent: LiveActivityIntent {
     }
 }
 @available(iOS 18.0, *) struct PurifierPowerSwitchIntent: SetValueIntent {
+    #if WIDGET_EXTENSION
+    // The widget extension cannot be launched to run intents on this iOS, so
+    // Shortcuts must only see (and run) the copy inside the app.
+    static let isDiscoverable = false
+    #endif
     static var title: LocalizedStringResource = "Purifier power"
     @Parameter(title: "On") var value: Bool
     func perform() async throws -> some IntentResult {

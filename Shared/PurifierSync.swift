@@ -53,6 +53,11 @@ enum PurifierSync {
 }
 
 struct TogglePurifierIntent: AppIntent {
+    #if WIDGET_EXTENSION
+    // The widget extension cannot be launched to run intents on this iOS, so
+    // Shortcuts must only see (and run) the copy inside the app.
+    static let isDiscoverable = false
+    #endif
     static let title: LocalizedStringResource = "Toggle Air Purifier"
     static let description: IntentDescription? = IntentDescription("Turns the air purifier on or off.")
 
@@ -67,6 +72,11 @@ struct TogglePurifierIntent: AppIntent {
 }
 
 struct SetPurifierPowerIntent: AppIntent {
+    #if WIDGET_EXTENSION
+    // The widget extension cannot be launched to run intents on this iOS, so
+    // Shortcuts must only see (and run) the copy inside the app.
+    static let isDiscoverable = false
+    #endif
     static let title: LocalizedStringResource = "Set Air Purifier Power"
     static let description: IntentDescription? = IntentDescription("Turns the air purifier on or off.")
 
@@ -87,6 +97,11 @@ struct SetPurifierPowerIntent: AppIntent {
 }
 
 struct AirQualityIntent: AppIntent {
+    #if WIDGET_EXTENSION
+    // The widget extension cannot be launched to run intents on this iOS, so
+    // Shortcuts must only see (and run) the copy inside the app.
+    static let isDiscoverable = false
+    #endif
     static let title: LocalizedStringResource = "Get Air Quality"
     static let description: IntentDescription? = IntentDescription("Reads the purifier's current PM2.5.")
 

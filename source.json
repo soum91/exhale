@@ -20,6 +20,15 @@
       "screenshotURLs": [],
       "versions": [
         {
+          "version": "1.5.0.20",
+          "buildVersion": "20",
+          "date": "2026-10-27T01:38:33Z",
+          "localizedDescription": "- Run Shortcuts actions in the app instead of the widget extension (978b5d0)",
+          "downloadURL": "https://github.com/soum91/exhale/releases/download/build-20/Exhale-1.5.0-build-20.ipa",
+          "size": 1532222,
+          "minOSVersion": "17.0"
+        },
+        {
           "version": "1.5.0.19",
           "buildVersion": "19",
           "date": "2026-10-25T18:04:51Z",
@@ -83,11 +92,11 @@
           "minOSVersion": "17.0"
         }
       ],
-      "version": "1.5.0.19",
-      "versionDate": "2026-10-25T18:04:51Z",
-      "versionDescription": "- Add icon-based 1-slot purifier power widget (d212a1f)",
-      "downloadURL": "https://github.com/soum91/exhale/releases/download/build-19/Exhale-1.5.0-build-19.ipa",
-      "size": 1532086,
+      "version": "1.5.0.20",
+      "versionDate": "2026-10-27T01:38:33Z",
+      "versionDescription": "- Run Shortcuts actions in the app instead of the widget extension (978b5d0)",
+      "downloadURL": "https://github.com/soum91/exhale/releases/download/build-20/Exhale-1.5.0-build-20.ipa",
+      "size": 1532222,
       "appPermissions": {}
     }
   ],

@@ -36,6 +36,9 @@ targets:
         NSLocationWhenInUseUsageDescription: Exhale uses your location to run scenes when you arrive or leave home.
         NSLocationAlwaysAndWhenInUseUsageDescription: Exhale runs your arrive and leave home scenes in the background, even when the app is closed. Choose Always for that to work.
         NSLocalNetworkUsageDescription: Exhale talks to your purifier directly over Wi-Fi for fan speed, display and instant control.
+        NSBonjourServices: [_afterglow._tcp]
+        NSAppTransportSecurity:
+          NSAllowsLocalNetworking: true
         NSPhotoLibraryAddUsageDescription: Exhale saves the Smart Life login QR to Photos so you can pick it from Smart Life's scanner.
         LSApplicationQueriesSchemes: [smartlife, tuyasmart]
         CFBundleURLTypes:

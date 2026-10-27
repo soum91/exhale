@@ -41,6 +41,20 @@ struct SettingsView: View {
 
                 Section {
                     NavigationLink {
+                        HomeBridgeView().environmentObject(store)
+                    } label: {
+                        HStack {
+                            Label("Apple Home bridge", systemImage: "homekit")
+                            Spacer()
+                            Text(HomeBridgeLink.stored.isSet ? "Paired" : "Set up").foregroundStyle(.secondary)
+                        }
+                    }
+                } footer: {
+                    Text("Puts the purifier, PM2.5 and filter life in the Home app through Afterglow's ESP32 bridge.")
+                }
+
+                Section {
+                    NavigationLink {
                         CloudHistoryView().environmentObject(store)
                     } label: {
                         HStack {

@@ -75,15 +75,15 @@ struct RootView: View {
  
 /// App-only Shortcuts actions for Apple's built-in Control Center control.
 struct ExhaleShortcuts: AppShortcutsProvider {
-    static var shortcutTileColor: ShortcutTileColor = .green
+    static var shortcutTileColor: ShortcutTileColor = .teal
 
     static var appShortcuts: [AppShortcut] {
         AppShortcut(intent: TogglePurifierIntent(), phrases: [
-            "Toggle the purifier in \\(.applicationName)",
-            "Switch the purifier with \\(.applicationName)",
+            "Toggle the purifier in \(.applicationName)",
+            "Switch the purifier with \(.applicationName)",
         ], shortTitle: "Purifier Power", systemImageName: "power")
         AppShortcut(intent: AirQualityIntent(), phrases: [
-            "Air quality in \\(.applicationName)",
+            "Air quality in \(.applicationName)",
         ], shortTitle: "Air Quality", systemImageName: "aqi.medium")
     }
 }

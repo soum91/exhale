@@ -1,6 +1,7 @@
 import SwiftUI
 import BackgroundTasks
 import WidgetKit
+import AppIntents
 
 @main
 struct ExhaleApp: App {
@@ -68,5 +69,21 @@ struct RootView: View {
         } message: {
             Text(store.error ?? "")
         }
+    }
+}
+
+ 
+/// App-only Shortcuts actions for Apple's built-in Control Center control.
+struct ExhaleShortcuts: AppShortcutsProvider {
+    static var shortcutTileColor: ShortcutTileColor = .green
+
+    static var appShortcuts: [AppShortcut] {
+        AppShortcut(intent: TogglePurifierIntent(), phrases: [
+            "Toggle the purifier in \\(.applicationName)",
+            "Switch the purifier with \\(.applicationName)",
+        ], shortTitle: "Purifier Power", systemImageName: "power")
+        AppShortcut(intent: AirQualityIntent(), phrases: [
+            "Air quality in \\(.applicationName)",
+        ], shortTitle: "Air Quality", systemImageName: "aqi.medium")
     }
 }

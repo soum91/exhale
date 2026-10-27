@@ -390,6 +390,7 @@ struct ExhalePowerWidgetView: View {
 @main
 struct ExhaleWidgetBundle: WidgetBundle {
     var body: some Widget {
+        ExhaleLockWidget()
         if #available(iOS 18.0, *) { PurifierPowerControl(); PurifierActionControl() }
 
         ExhaleWidget()

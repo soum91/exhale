@@ -50,7 +50,7 @@ struct SettingsView: View {
                         }
                     }
                 } footer: {
-                    Text("Puts the purifier, PM2.5 and filter life in the Home app through Afterglow's ESP32 bridge.")
+                    Text("Puts the purifier, PM2.5 and filter life in the Home app through the Keystone Bridge (ESP32).")
                 }
 
                 Section {

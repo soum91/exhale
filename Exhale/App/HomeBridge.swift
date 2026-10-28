@@ -2,7 +2,7 @@ import Foundation
 import Network
 import SwiftUI
 
-/// Afterglow's ESP32 bridge puts devices in Apple Home. Exhale pairs with it on its own token and
+/// the Keystone Bridge (ESP32) puts devices in Apple Home. Exhale pairs with it on its own token and
 /// sends the purifier: address, local key and which data point does what. The bridge talks to the
 /// purifier itself after that, so Home works with this phone asleep or away.
 struct HomeBridgeLink: Codable, Equatable {
@@ -39,7 +39,7 @@ enum HomeBridgeAPI {
         req.timeoutInterval = 4
         let (data, _) = try await URLSession.shared.data(for: req)
         guard let obj = try JSONSerialization.jsonObject(with: data) as? [String: Any],
-              obj["app"] as? String == "afterglow-bridge" else { throw HomeBridgeError.message("That isn't an Afterglow bridge.") }
+              obj["app"] as? String == "afterglow-bridge" else { throw HomeBridgeError.message("That isn't a Keystone Bridge.") }
         return obj
     }
 
@@ -50,7 +50,7 @@ enum HomeBridgeAPI {
         req.timeoutInterval = 5
         let (data, resp) = try await URLSession.shared.data(for: req)
         if (resp as? HTTPURLResponse)?.statusCode == 409 {
-            throw HomeBridgeError.message("The bridge is already paired with Exhale on another install. In Afterglow › Settings › Apple Home bridge, tap Reset Exhale pairing, then pair here again.")
+            throw HomeBridgeError.message("The bridge is already paired with Exhale on another install. In Keystone › Bridge, tap Reset next to Exhale, then pair here again.")
         }
         guard let obj = try JSONSerialization.jsonObject(with: data) as? [String: Any], let t = obj["token"] as? String else {
             throw HomeBridgeError.message("The bridge didn't hand out a token. Update its firmware from Afterglow.")
@@ -196,7 +196,7 @@ struct HomeBridgeView: View {
     var body: some View {
         List {
             Section {
-                Text("Afterglow's ESP32 bridge can put the purifier in Apple Home: a purifier tile with speed and auto, a PM2.5 air quality sensor, filter life, child lock and a display switch. If \"Keep display off\" is on, the bridge keeps knocking the display back off around the clock, even with this phone away.")
+                Text("the Keystone Bridge (ESP32) can put the purifier in Apple Home: a purifier tile with speed and auto, a PM2.5 air quality sensor, filter life, child lock and a display switch. If \"Keep display off\" is on, the bridge keeps knocking the display back off around the clock, even with this phone away.")
                     .font(.footnote)
             }
 
@@ -231,7 +231,7 @@ struct HomeBridgeView: View {
                 } header: {
                     Text("Pair")
                 } footer: {
-                    Text("No bridge yet? Set one up from Afterglow › Settings › Apple Home bridge.")
+                    Text("No bridge yet? Set one up with the Keystone app.")
                 }
             }
             if let status { Section { Text(status).font(.footnote) } }
@@ -250,7 +250,7 @@ struct HomeBridgeView: View {
         defer { busy = false }
         do {
             let info = try await HomeBridgeAPI.info(host: host, port: port)
-            bridgeName = "Afterglow Bridge \(info["version"] as? String ?? "")"
+            bridgeName = "Keystone Bridge \(info["version"] as? String ?? "")"
             let token = try await HomeBridgeAPI.claim(host: host, port: port)
             link = HomeBridgeLink(host: host, port: port, token: token)
             HomeBridgeLink.stored = link

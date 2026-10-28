@@ -320,6 +320,12 @@ struct ClassicView: View {
     }
 
     private func send(_ commands: [(String, JSONValue)]) {
+        // A Wi-Fi fan speed (with or without a switch to Manual) goes through the sequenced path so the
+        // firmware's reset-to-1 on entering Manual can't clobber it.
+        if let fan = store.local.fanDP, let speed = commands.first(where: { $0.0 == "dp:\(fan)" })?.1 {
+            store.setLocalFan(speed, manualMode: true)
+            return
+        }
         store.setMany(commands)
     }
 }

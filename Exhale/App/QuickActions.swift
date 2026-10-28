@@ -13,10 +13,9 @@ import Foundation
             }
             let values = store.localFanValues
             let next = max(0, min(values.count - 1, index + (action == .fanUp ? 1 : -1)))
-            if let mode = p.modeCode, let manual = p.functions[mode]?.range?.first(where: { $0.lowercased() == "manual" }), p.string(mode) != manual {
-                try await PurifierSync.send(mode, .string(manual))
-            }
-            try await store.sendLocal([dp: values[next]])
+            _ = dp
+            await store.setFanSpeed(values[next], manualMode: true)
+            if let e = store.error { store.error = nil; throw TuyaError(message: e) }
             return
         }
         if action == .display, store.local.enabled, let dp = store.local.displayDP {

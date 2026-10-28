@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import WidgetKit
 
 /// What we've learned about talking to the purifier over Wi-Fi.
 struct LocalConfig: Codable, Equatable {
@@ -231,13 +232,48 @@ extension AppStore {
     }
 
     func setLocalFan(_ v: JSONValue, manualMode: Bool) {
+        Task { await setFanSpeed(v, manualMode: manualMode) }
+    }
+
+    /// The firmware drops to speed 1 whenever it enters Manual, so a speed sent alongside a mode change gets
+    /// wiped out if the mode lands second. Switch the mode first, wait for the purifier to confirm it, then
+    /// send the speed and check that it stuck.
+    func setFanSpeed(_ v: JSONValue, manualMode: Bool) async {
         guard let fan = local.fanDP else { return }
-        var cmds: [(String, JSONValue)] = [("dp:\(fan)", v)]
-        if manualMode, let p = purifier, let mode = p.modeCode, let range = p.functions[mode]?.range,
-           let manual = range.first(where: { $0.lowercased() == "manual" }), p.string(mode) != manual {
-            cmds.insert((mode, .string(manual)), at: 0)
+        if let f = local.fanDP { localDPS[f] = v }       // move the UI right away
+        do {
+            if manualMode, let p = purifier, let mode = p.modeCode, let range = p.functions[mode]?.range,
+               let manual = range.first(where: { $0.lowercased() == "manual" }) {
+                let modeID = local.codeMap.first(where: { $0.value == mode })?.key
+                let current = modeID.flatMap { localDPS[$0]?.stringValue } ?? p.string(mode)
+                if current != manual {
+                    if let modeID, link != nil {
+                        try await sendLocal([modeID: .string(manual)])
+                    } else {
+                        try await PurifierSync.send(mode, .string(manual))
+                    }
+                    purifier = purifier?.applying(mode, .string(manual))
+                    // Wait for the purifier to report Manual (it resets the fan to 1 at that moment).
+                    let deadline = Date().addingTimeInterval(3)
+                    while Date() < deadline {
+                        try? await Task.sleep(nanoseconds: 250_000_000)
+                        if let modeID { await queryLocal(); if localDPS[modeID]?.stringValue == manual { break } }
+                    }
+                    try? await Task.sleep(nanoseconds: 400_000_000)
+                }
+            }
+            try await sendLocal([fan: v])
+            // Verify, and send once more if the firmware threw it away.
+            try? await Task.sleep(nanoseconds: 1_200_000_000)
+            await queryLocal()
+            if localDPS[fan] != v {
+                try await sendLocal([fan: v])
+            }
+            if let p = purifier { Cache.save(p) }
+            WidgetCenter.shared.reloadAllTimelines()
+        } catch {
+            self.error = error.localizedDescription
         }
-        setMany(cmds)
     }
 
     func toggleLocalDisplay() {

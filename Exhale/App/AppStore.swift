@@ -130,6 +130,17 @@ final class AppStore: ObservableObject {
         stopPolling()
         localWanted = true
         localRetry = 0
+        // Known layout for the GermGuardian AC3250: DP 4 is fan speed (1-10), DP 110 is the display.
+        if let p = purifier, p.info.productName.uppercased().contains("AC3250") {
+            var changed = false
+            if local.fanDP == nil { local.fanDP = "4"; changed = true }
+            if local.displayDP == nil { local.displayDP = "110"; changed = true }
+            if changed { saveLocal() }
+        }
+        // Lost the address (e.g. after a reinstall): find the purifier again on its own.
+        if local.enabled, local.host == nil, purifier?.info.localKey != nil, localTask == nil {
+            findOnWiFi()
+        }
         RefreshLog.add("App opened", ok: true, pm: purifier?.pm25)
         // Re-save everything so freshly named App Groups (after a reinstall) get the data, then wake the widget.
         if let t = TokenStore.load() { TokenStore.save(t) }

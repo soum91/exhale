@@ -20,6 +20,15 @@
       "screenshotURLs": [],
       "versions": [
         {
+          "version": "1.5.0.26",
+          "buildVersion": "26",
+          "date": "2026-10-28T22:09:15Z",
+          "localizedDescription": "- Fan speed no longer resets to 1: switch to Manual first, wait for it, then set and verify the speed (4d0be5e)",
+          "downloadURL": "https://github.com/soum91/exhale/releases/download/build-26/Exhale-1.5.0-build-26.ipa",
+          "size": 1609267,
+          "minOSVersion": "17.0"
+        },
+        {
           "version": "1.5.0.25",
           "buildVersion": "25",
           "date": "2026-10-28T04:00:52Z",
@@ -128,11 +137,11 @@
           "minOSVersion": "17.0"
         }
       ],
-      "version": "1.5.0.25",
-      "versionDate": "2026-10-28T04:00:52Z",
-      "versionDescription": "- Call the bridge Keystone Bridge and point to the Keystone app (ab7e754)",
-      "downloadURL": "https://github.com/soum91/exhale/releases/download/build-25/Exhale-1.5.0-build-25.ipa",
-      "size": 1603348,
+      "version": "1.5.0.26",
+      "versionDate": "2026-10-28T22:09:15Z",
+      "versionDescription": "- Fan speed no longer resets to 1: switch to Manual first, wait for it, then set and verify the speed (4d0be5e)",
+      "downloadURL": "https://github.com/soum91/exhale/releases/download/build-26/Exhale-1.5.0-build-26.ipa",
+      "size": 1609267,
       "appPermissions": {}
     }
   ],

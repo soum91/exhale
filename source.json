@@ -20,6 +20,15 @@
       "screenshotURLs": [],
       "versions": [
         {
+          "version": "1.5.0.27",
+          "buildVersion": "27",
+          "date": "2026-10-29T09:04:12Z",
+          "localizedDescription": "- Fix fan speed always resetting to 1: send speed as text (\"5\"), the type the AC3250 reports (203f1ff)",
+          "downloadURL": "https://github.com/soum91/exhale/releases/download/build-27/Exhale-1.5.0-build-27.ipa",
+          "size": 1609566,
+          "minOSVersion": "17.0"
+        },
+        {
           "version": "1.5.0.26",
           "buildVersion": "26",
           "date": "2026-10-28T22:09:15Z",
@@ -137,11 +146,11 @@
           "minOSVersion": "17.0"
         }
       ],
-      "version": "1.5.0.26",
-      "versionDate": "2026-10-28T22:09:15Z",
-      "versionDescription": "- Fan speed no longer resets to 1: switch to Manual first, wait for it, then set and verify the speed (4d0be5e)",
-      "downloadURL": "https://github.com/soum91/exhale/releases/download/build-26/Exhale-1.5.0-build-26.ipa",
-      "size": 1609267,
+      "version": "1.5.0.27",
+      "versionDate": "2026-10-29T09:04:12Z",
+      "versionDescription": "- Fix fan speed always resetting to 1: send speed as text (\"5\"), the type the AC3250 reports (203f1ff)",
+      "downloadURL": "https://github.com/soum91/exhale/releases/download/build-27/Exhale-1.5.0-build-27.ipa",
+      "size": 1609566,
       "appPermissions": {}
     }
   ],

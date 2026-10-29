@@ -21,14 +21,18 @@ struct LocalConfig: Codable, Equatable {
         set { AppGroup.write(newValue, "local.json") }
     }
 
-    /// The AC3250 takes exactly 1...10 on its fan point (anything else resets it to 1), so always offer all ten.
+    /// The AC3250's fan point takes exactly 1...10, and it is a *text* enum ("1"..."10"), not a number.
+    /// Sending the number 5 instead of the text "5" is invalid and the firmware falls back to speed 1,
+    /// so always send the same type the purifier reports.
     var fanValues: [JSONValue] {
         guard let fan = fanDP else { return [] }
         let seen = observed[fan] ?? []
-        if seen.isEmpty || seen.contains(where: { $0.doubleValue != nil }) {
-            return (1...10).map { JSONValue.int($0) }
+        let reportsText = seen.contains { if case .string = $0 { return true }; return false }
+        let reportsNumber = seen.contains { if case .int = $0 { return true }; return false }
+        if reportsText || !reportsNumber {
+            return (1...10).map { JSONValue.string(String($0)) }
         }
-        return seen
+        return (1...10).map { JSONValue.int($0) }
     }
 }
 
@@ -226,7 +230,11 @@ extension AppStore {
     // MARK: Mapped controls
 
     var localFanValues: [JSONValue] { local.fanValues }
-    var localFan: JSONValue? { local.fanDP.flatMap { localDPS[$0] } }
+    /// Current fan value, normalised to the same type as `localFanValues` so lookups match.
+    var localFan: JSONValue? {
+        guard let raw = local.fanDP.flatMap({ localDPS[$0] }), let n = raw.doubleValue else { return nil }
+        return localFanValues.first { $0.doubleValue == n } ?? raw
+    }
     var localDisplayOn: Bool? {
         local.displayDP.flatMap { localDPS[$0]?.boolValue }.map { $0 != local.displayInverted }
     }

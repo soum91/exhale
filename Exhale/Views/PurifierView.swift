@@ -211,7 +211,7 @@ struct PurifierView: View {
             HStack {
                 SectionTitle(text: "Fan speed")
                 Spacer()
-                Image(systemName: store.localState.isConnected ? "wifi" : "wifi.slash")
+                Image(systemName: store.localState.isConnected ? "wifi" : (store.remoteReady ? "globe" : "wifi.slash"))
                     .font(.caption).foregroundStyle(.secondary)
             }
             let values = store.localFanValues
@@ -223,8 +223,8 @@ struct PurifierView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .card()
-        .disabled(!controlsEnabled || !store.localState.isConnected)
-        .opacity(controlsEnabled && store.localState.isConnected ? 1 : 0.5)
+        .disabled(!controlsEnabled || !store.hiddenControlsAvailable)
+        .opacity(controlsEnabled && store.hiddenControlsAvailable ? 1 : 0.5)
     }
 
     private var wifiPromptCard: some View {
@@ -253,7 +253,7 @@ struct PurifierView: View {
                     Label("Display", systemImage: "lightbulb.fill").font(.headline)
                 }
                 .tint(accent)
-                .disabled(!store.localState.isConnected)
+                .disabled(!store.hiddenControlsAvailable)
                 Divider().opacity(0.3)
             }
             Toggle(isOn: $store.keepDisplayOff) {

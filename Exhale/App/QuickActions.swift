@@ -7,6 +7,7 @@ import Foundation
             store.startLocal()
             await store.localTask?.value
             await store.queryLocal()
+            if store.link == nil { await store.pollRemote() }
             guard let dp = store.local.fanDP, let current = store.localFan,
                   let index = store.localFanValues.firstIndex(of: current), !store.localFanValues.isEmpty else {
                 throw TuyaError(message: "Can't read the purifier's local fan speed. Open Exhale near the purifier.")
@@ -20,6 +21,12 @@ import Foundation
         }
         if action == .display, store.local.enabled, let dp = store.local.displayDP {
             store.startLocal(); await store.localTask?.value; await store.queryLocal()
+            if store.link == nil, store.remoteReady {
+                await store.pollRemote()
+                await store.setDisplayRemote(!(store.localDisplayOn ?? false))
+                if let e = store.error { store.error = nil; throw TuyaError(message: e) }
+                return
+            }
             guard let on = store.localDisplayOn else { throw TuyaError(message: "The purifier's local display state is unavailable.") }
             if !on { store.keepDisplayOff = false }
             try await store.sendLocal([dp: .bool(!on != store.local.displayInverted)])

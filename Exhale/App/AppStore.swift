@@ -21,8 +21,14 @@ final class AppStore: ObservableObject {
             t.displayCode = purifier?.displayCode
             Tweaks.values = t
             if keepDisplayOff, let p = purifier, let client { Task { await SceneEngine.enforceDisplay(p, client: client); await refresh() } }
+            // Away from home the bridge is the one keeping the display off, so tell it.
+            if link == nil, remoteReady {
+                let v = keepDisplayOff
+                Task { try? await BridgeRemote.control(["keepDisplayOff": v]) }
+            }
         }
     }
+    @Published var remoteReady: Bool = BridgeRemote.isReady
 
     static let shared = AppStore()
 
@@ -154,6 +160,7 @@ final class AppStore: ObservableObject {
             }
         }
         startLocal()
+        Task { await self.syncBridge() }
         guard purifier != nil, client != nil else { return }
         pollTask = Task { [weak self] in
             while !Task.isCancelled {
@@ -171,7 +178,7 @@ final class AppStore: ObservableObject {
     }
 
     func refresh() async {
-        if link != nil { await queryLocal() }
+        if link != nil { await queryLocal() } else { await pollRemote() }
         guard let client, let current = purifier else { return }
         do {
             guard let info = try await client.device(id: current.id) else { return }

@@ -248,6 +248,7 @@ extension AppStore {
     /// send the speed and check that it stuck.
     func setFanSpeed(_ v: JSONValue, manualMode: Bool) async {
         guard let fan = local.fanDP else { return }
+        if link == nil, remoteReady { await setFanRemote(v); return }
         if let f = local.fanDP { localDPS[f] = v }       // move the UI right away
         do {
             if manualMode, let p = purifier, let mode = p.modeCode, let range = p.functions[mode]?.range,
@@ -287,6 +288,7 @@ extension AppStore {
     func toggleLocalDisplay() {
         guard let d = local.displayDP else { return }
         let on = localDisplayOn ?? false
+        if link == nil, remoteReady { Task { await setDisplayRemote(!on) }; return }
         if !on, keepDisplayOff { keepDisplayOff = false }
         // Raw value that means the new state.
         setMany([("dp:\(d)", .bool(!on != local.displayInverted))])

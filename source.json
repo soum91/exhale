@@ -20,6 +20,15 @@
       "screenshotURLs": [],
       "versions": [
         {
+          "version": "1.5.0.28",
+          "buildVersion": "28",
+          "date": "2026-11-05T13:10:04Z",
+          "localizedDescription": "- Fan speed and display away from home through the Keystone Bridge relay (71bff23)",
+          "downloadURL": "https://github.com/soum91/exhale/releases/download/build-28/Exhale-1.5.0-build-28.ipa",
+          "size": 1659612,
+          "minOSVersion": "17.0"
+        },
+        {
           "version": "1.5.0.27",
           "buildVersion": "27",
           "date": "2026-10-29T09:04:12Z",
@@ -146,11 +155,11 @@
           "minOSVersion": "17.0"
         }
       ],
-      "version": "1.5.0.27",
-      "versionDate": "2026-10-29T09:04:12Z",
-      "versionDescription": "- Fix fan speed always resetting to 1: send speed as text (\"5\"), the type the AC3250 reports (203f1ff)",
-      "downloadURL": "https://github.com/soum91/exhale/releases/download/build-27/Exhale-1.5.0-build-27.ipa",
-      "size": 1609566,
+      "version": "1.5.0.28",
+      "versionDate": "2026-11-05T13:10:04Z",
+      "versionDescription": "- Fan speed and display away from home through the Keystone Bridge relay (71bff23)",
+      "downloadURL": "https://github.com/soum91/exhale/releases/download/build-28/Exhale-1.5.0-build-28.ipa",
+      "size": 1659612,
       "appPermissions": {}
     }
   ],

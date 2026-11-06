@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "targets": [
+    {
+      "name": "iOS app",
+      "evidence": [
+        {
+          "path": "Exhale/Views/SettingsView.swift",
+          "contains": [
+            "Installed version",
+            "AppGroup.version",
+            "CFBundleVersion"
+          ]
+        },
+        {
+          "path": "Shared/SharedStore.swift",
+          "contains": [
+            "CFBundleShortVersionString"
+          ]
+        }
+      ]
+    }
+  ]
+}

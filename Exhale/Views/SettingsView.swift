@@ -85,7 +85,7 @@ struct SettingsView: View {
                     row("Signed groups", AppGroup.signedGroups().isEmpty ? "none" : AppGroup.signedGroups().joined(separator: "\n"))
                     row("Shared folders", "\(AppGroup.containers.count)")
                     row("Bundle ID", Bundle.main.bundleIdentifier ?? "?")
-                    row("Version", AppGroup.version)
+                    row("Installed version", "\(AppGroup.version) (build \(Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "Unknown"))")
                     Button("Refresh widgets") { WidgetCenter.shared.reloadAllTimelines() }
                 } header: {
                     Text("Widget")

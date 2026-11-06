@@ -20,6 +20,15 @@
       "screenshotURLs": [],
       "versions": [
         {
+          "version": "1.5.0.29",
+          "buildVersion": "29",
+          "date": "2026-11-06T20:16:48Z",
+          "localizedDescription": "- Show actual installed app version and build in UI (8e5f3d2)",
+          "downloadURL": "https://github.com/soum91/exhale/releases/download/build-29/Exhale-1.5.0-build-29.ipa",
+          "size": 1660464,
+          "minOSVersion": "17.0"
+        },
+        {
           "version": "1.5.0.28",
           "buildVersion": "28",
           "date": "2026-11-05T13:10:04Z",
@@ -155,11 +164,11 @@
           "minOSVersion": "17.0"
         }
       ],
-      "version": "1.5.0.28",
-      "versionDate": "2026-11-05T13:10:04Z",
-      "versionDescription": "- Fan speed and display away from home through the Keystone Bridge relay (71bff23)",
-      "downloadURL": "https://github.com/soum91/exhale/releases/download/build-28/Exhale-1.5.0-build-28.ipa",
-      "size": 1659612,
+      "version": "1.5.0.29",
+      "versionDate": "2026-11-06T20:16:48Z",
+      "versionDescription": "- Show actual installed app version and build in UI (8e5f3d2)",
+      "downloadURL": "https://github.com/soum91/exhale/releases/download/build-29/Exhale-1.5.0-build-29.ipa",
+      "size": 1660464,
       "appPermissions": {}
     }
   ],

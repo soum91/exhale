@@ -20,6 +20,15 @@
       "screenshotURLs": [],
       "versions": [
         {
+          "version": "1.5.0.31",
+          "buildVersion": "31",
+          "date": "2026-11-10T08:13:36Z",
+          "localizedDescription": "- Enforce pseudonymous author metadata and owner privacy (be925c6)\n- docs: require verified diagnostic exports [skip ci] (a88cc00)\n- docs: require verified diagnostic exports [skip ci] (3a58fc9)\n- docs: require verified diagnostics Copy, Share and Files export [skip ci] (fdc3a1c)\n- docs: require verified diagnostics Copy, Share and Files export [skip ci] (09aef27)\n- ci: separate release tracks when deriving factual changes [skip ci] (ffcee3f)\n- ci: reconcile bot-created releases with factual notes [skip ci] (e00c2fd)\n- ci: verify and record actual release changes [skip ci] (e7af6a7)\n- docs: require evidence-based release changelog [skip ci] (1c1b62e)\n- docs: initialize factual release changelog [skip ci] (714264f)",
+          "downloadURL": "https://github.com/soum91/exhale/releases/download/build-31/Exhale-1.5.0-build-31.ipa",
+          "size": 1660380,
+          "minOSVersion": "17.0"
+        },
+        {
           "version": "1.5.0.30",
           "buildVersion": "30",
           "date": "2026-11-06T21:02:22Z",
@@ -173,11 +182,11 @@
           "minOSVersion": "17.0"
         }
       ],
-      "version": "1.5.0.30",
-      "versionDate": "2026-11-06T21:02:22Z",
-      "versionDescription": "- Enforce visible installed version/build across app releases (0b6f1ab)",
-      "downloadURL": "https://github.com/soum91/exhale/releases/download/build-30/Exhale-1.5.0-build-30.ipa",
-      "size": 1660433,
+      "version": "1.5.0.31",
+      "versionDate": "2026-11-10T08:13:36Z",
+      "versionDescription": "- Enforce pseudonymous author metadata and owner privacy (be925c6)\n- docs: require verified diagnostic exports [skip ci] (a88cc00)\n- docs: require verified diagnostic exports [skip ci] (3a58fc9)\n- docs: require verified diagnostics Copy, Share and Files export [skip ci] (fdc3a1c)\n- docs: require verified diagnostics Copy, Share and Files export [skip ci] (09aef27)\n- ci: separate release tracks when deriving factual changes [skip ci] (ffcee3f)\n- ci: reconcile bot-created releases with factual notes [skip ci] (e00c2fd)\n- ci: verify and record actual release changes [skip ci] (e7af6a7)\n- docs: require evidence-based release changelog [skip ci] (1c1b62e)\n- docs: initialize factual release changelog [skip ci] (714264f)",
+      "downloadURL": "https://github.com/soum91/exhale/releases/download/build-31/Exhale-1.5.0-build-31.ipa",
+      "size": 1660380,
       "appPermissions": {}
     }
   ],
